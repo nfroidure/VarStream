@@ -8,5 +8,9 @@
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  *
  */
-require('./VarStreamReader');
-require('./VarStreamWriter');
+
+var VarStream={
+	'VarStreamReader':require('./VarStreamReader'),
+	'VarStreamWriter':require('./VarStreamWriter')};
+
+module.exports = VarStream;
