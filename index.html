@@ -102,8 +102,8 @@
 			console.log(myScope2.database.hosts[2].domain); // printsmysql1.example.com
 			console.log(myScope2.database.hosts[3].domain); // printsmysql2.example.com
 			
-			var myStreamWriter=new VarStreamWriter(function(content) { console.log(content) },false,true);
-			myStreamWriter.write(myScope);
+			var myStreamWriter=new VarStreamWriter(function(content) { console.log(content) },true,false);
+			myStreamWriter.write(myScope2);
 		</script>
 	</body>
 </html>

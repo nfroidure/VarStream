@@ -4,17 +4,19 @@
  * This file is free software;
  * you can redistribute it and/or modify it under the terms of the GNU
  * General Public License (GPL) as published by the Free Software
- * Foundation, in version 2. It is distributed in the
+ * Foundation, in version 3. It is distributed in the
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  *
  */
 
-var VarStreamWriter=function(callback,mergeArrays,debug)
+var VarStreamWriter=function(callback,mergeArrays,morphContexts,debug)
 	{
-	this.currentNodes=new Array(); // Current nodes
+	this.lastContext='';
 	this.callback=callback; // Output stream callback
-	this.mergeArrays=(mergeArrays?mergeArrays:false);
+	this.mergeArrays=(mergeArrays?mergeArrays:true);
+	this.morphContexts=(morphContexts?morphContexts:true);
 	this.debug=(debug?debug:false);
+	this.imbricatedArrayEntries=new Array();
 	};
 VarStreamWriter.prototype.write = function (scope,context)
 	{
@@ -26,7 +28,9 @@ VarStreamWriter.prototype.write = function (scope,context)
 			{
 			if(this.debug)
 				console.log('Reading array entry '+i+' in scope '+context);
-			this.write(scope[i],(context?context+'.':'')+(i==0&&!this.mergeArrays?i:'+'));
+			this.imbricatedArrayEntries.push(true);
+			this.write(scope[i],(context?context+'.':'')+(this.mergeArrays?'?':1));
+			this.imbricatedArrayEntries.pop();
 			}
 		}
 	else if(scope instanceof Object)
@@ -45,6 +49,30 @@ VarStreamWriter.prototype.write = function (scope,context)
 		{
 		if(this.debug)
 			console.log('Writing value '+context);
-		this.callback(context+'='+scope+"\n");
+		// Changing context with imbricated arrays
+		for(var i=this.imbricatedArrayEntries.length-1; i>=0; i--)
+			{
+			var index=context.lastIndexOf('?');
+			if(this.imbricatedArrayEntries[i])
+				{
+				context=context.substr(0,index)+'+'+context.substr(index+1);
+				this.imbricatedArrayEntries[i]=false;
+				}
+			else
+				{
+				context=context.substr(0,index)+'*'+context.substr(index+1);
+				}
+			}
+		// Trying to reduce context with "
+		var morphedContext=context;
+		if(this.morphContexts&&morphedContext.indexOf(this.lastContext)===0)
+			{
+			morphedContext=morphedContext.replace(this.lastContext,'"')
+			}
+		// Saving this context for later use
+		var index=context.lastIndexOf('.');
+		this.lastContext=(index!==false?context.substr(0,index):'');
+		// Calling back
+		this.callback(morphedContext+'='+scope+"\n");
 		}
 	};
