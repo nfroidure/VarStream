@@ -6,13 +6,14 @@
 	<body>
 		<h1>Some VarStreams</h1>
 		<p>Open your web console to view what's done on this page.</p>
-		<script type="text/javascript" src="VarStream.js"></script>
+		<script type="text/javascript" src="VarStreamReader.js"></script>
+		<script type="text/javascript" src="VarStreamWriter.js"></script>
 		<script type="text/javascript">
 			var myScope={};
-			var myStream=new VarStream(myScope,true);
-			myStream.read('');
-			myStream.read('#comment');
-			myStream.read('# Database'+"\n"
+			var myStreamReader=new VarStreamReader(myScope,true);
+			myStreamReader.read('');
+			myStreamReader.read('#comment');
+			myStreamReader.read('# Database'+"\n"
 			+'database.type=mysql'+"\n"
 			+'database.hosts.+.domain=mysql1.example.com'+"\n"
 			+'database.hosts.*.master=true'+"\n"
@@ -27,10 +28,10 @@
 			+'rest.servers.+.domain=api.example.com'+"\n"
 			+'rest.servers.*.auth=basic'+"\n"
 			+'rest.servers.*.user&=database.user');
-			myStream.read('".password=pass');
+			myStreamReader.read('".password=pass');
 			console.log('root=='+myScope.database.user+'=='+myScope.rest.servers[0].user+'!='+myScope.unexistingvar);
 
-			myStream.read('# Date'+"\n"
+			myStreamReader.read('# Date'+"\n"
 			+'l_timezone=Europe/Paris'+"\n"
 			+'l_date_format=l d F Y'+"\n"
 			+'l_day_format=d F'+"\n"
@@ -72,20 +73,20 @@
 			+'l_multiline2=i curently have a \\'+"\n"
 			+'multiline value. \\'+"\n"
 			+'It\'s really great !\\');
-			myStream.read('But i\'m chunked !\\');
-			myStream.read('Will it run ?\\');
-			myStream.read('Yes, it is !');
+			myStreamReader.read('But i\'m chunked !\\');
+			myStreamReader.read('Will it run ?\\');
+			myStreamReader.read('Yes, it is !');
 			
 			console.log('root=='+myScope.database.user+'=='+myScope.rest.servers[0].user+'!='+myScope.unexistingvar);
 			console.log('l_multiline='+myScope.l_multiline);
 			console.log('l_multiline2='+myScope.l_multiline2);
 
 
-			var myScope={};
-			var myStream=new VarStream(myScope,true);
-			myStream.read(''); // Reading empty chunk
-			myStream.read('# Comment'); // This is a comment
-			myStream.read('# Database'+"\n"
+			var myScope2={};
+			var myStreamReader=new VarStreamReader(myScope2,true);
+			myStreamReader.read(''); // Reading empty chunk
+			myStreamReader.read('# Comment'); // This is a comment
+			myStreamReader.read('# Database'+"\n"
 			 +'database.type=mysql'+"\n"
 			 +'database.sync=false'+"\n"
 			 +'database.hosts.+.domain=mysql1.example.com'+"\n"
@@ -95,11 +96,14 @@
 			 +'database.hosts.+&=database.hosts.0'+"\n"
 			 +'database.hosts.+.domain&=database.hosts.1.domain'+"\n"
 			 ); // A more complicated chunk
-			console.log(myScope);
-			console.log(myScope.database.hosts[0].domain); // printsmysql1.example.com
-			console.log(myScope.database.hosts[1].domain); // printsmysql2.example.com
-			console.log(myScope.database.hosts[2].domain); // printsmysql1.example.com
-			console.log(myScope.database.hosts[3].domain); // printsmysql2.example.com
+			console.log(myScope2);
+			console.log(myScope2.database.hosts[0].domain); // printsmysql1.example.com
+			console.log(myScope2.database.hosts[1].domain); // printsmysql2.example.com
+			console.log(myScope2.database.hosts[2].domain); // printsmysql1.example.com
+			console.log(myScope2.database.hosts[3].domain); // printsmysql2.example.com
+			
+			var myStreamWriter=new VarStreamWriter(function(content) { console.log(content) },false,true);
+			myStreamWriter.write(myScope);
 		</script>
 	</body>
 </html>

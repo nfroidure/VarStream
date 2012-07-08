@@ -12,10 +12,10 @@ How to use
 -------------
 <pre>
 var myScope={};
-var myStream=new VarStream(myScope,true);
-myStream.read(''); // Reading empty chunk
-myStream.read('#comment'); // This is a comment
-myStream.read('# Database'
+var myStreamReader=new VarStreamReader(myScope,true);
+myStreamReader.read(''); // Reading empty chunk
+myStreamReader.read('#comment'); // This is a comment
+myStreamReader.read('# Database'
  +'database.type=mysql'+"\n"
  +'database.hosts.+.domain=mysql1.example.com'+"\n"
  +'database.hosts.*.master=true'+"\n"
