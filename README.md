@@ -23,10 +23,10 @@ myStream.read('# Database'
  +'".master=false'+"\n"
  +'database.hosts.+&=database.hosts.0'+"\n"
  +'database.hosts.+.domain&=database.hosts.*.domain'+"\n"); // A more complicated chunk
-console.log(myScope.database.hosts[0].domain); // printsmysql1.example.com
-console.log(myScope.database.hosts[1].domain); // printsmysql2.example.com
-console.log(myScope.database.hosts[2].domain); // printsmysql1.example.com
-console.log(myScope.database.hosts[3].domain); // printsmysql2.example.com
+console.log(myScope.database.hosts[0].domain); // prints mysql1.example.com
+console.log(myScope.database.hosts[1].domain); // prints mysql2.example.com
+console.log(myScope.database.hosts[2].domain); // prints mysql1.example.com
+console.log(myScope.database.hosts[3].domain); // prints mysql2.example.com
 </pre>
 
 Contributors
@@ -35,7 +35,7 @@ Contributors
 
 License
 -------
-This program excluding it's sounds is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
