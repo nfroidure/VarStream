@@ -1,0 +1,40 @@
+VarStream
+============
+
+VarStream is a variable exchange format designed to replace JSON for situations when it reaches his limits. VarStream has many advantages :
+- Human readable/writeable : no need to be a programmer to creates VarStreams datas.
+- Streamable : No need to way the datas to be fully loaded to populate your programs variables (use full for configuration files, localization files, web sockets realtime var loading ...).
+- Self referencable : you can refer to another variable of the stream in the stream itself, wich is not possible with JSON.
+
+VarStream program is free to use for any purpose (GNU/GPL), VarStream format is royalty free, i pushed it in the public domain. French speaking developpers can get a introduction to VarStreams here : http://www.insertafter.com/articles-remplacer_json_par_varstream.html . English version will come soon.
+
+How to use
+-------------
+var myScope={};
+var myStream=new VarStream(myScope,true);
+myStream.read(''); // Reading empty chunk
+myStream.read('#comment'); // This is a comment
+myStream.read('# Database'
+ +'database.type=mysql'+"\n"
+ +'database.hosts.+.domain=mysql1.example.com'+"\n"
+ +'database.hosts.*.master=true'+"\n"
+ +'database.hosts.+.domain=mysql2.example.com'+"\n"
+ +'".master=false'+"\n"
+ +'database.hosts.+&=database.hosts.0'+"\n"
+ +'database.hosts.+.domain&=database.hosts.*.domain'+"\n"); // A more complicated chunk
+console.log(myScope.database.hosts[0].domain); // printsmysql1.example.com
+console.log(myScope.database.hosts[1].domain); // printsmysql2.example.com
+console.log(myScope.database.hosts[2].domain); // printsmysql1.example.com
+console.log(myScope.database.hosts[3].domain); // printsmysql2.example.com
+
+Contributors
+-------------
+* Nicolas Froidure - @nfroidure
+
+License
+-------
+This program excluding it's sounds is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>
