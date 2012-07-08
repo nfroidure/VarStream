@@ -8,5 +8,5 @@
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  *
  */
-
-require
+require('./VarStreamReader');
+require('./VarStreamWriter');
