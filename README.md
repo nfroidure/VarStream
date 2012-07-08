@@ -1,15 +1,16 @@
 VarStream
 ============
 
-VarStream is a variable exchange format designed to replace JSON for situations when it reaches his limits. VarStream has many advantages :
-- Human readable/writeable : no need to be a programmer to creates VarStreams datas.
-- Streamable : No need to way the datas to be fully loaded to populate your programs variables (use full for configuration files, localization files, web sockets realtime var loading ...).
+VarStream is a variable exchange format designed to replace JSON for situations when it reaches its limits. VarStream has many advantages :
+- Human readable/writeable : no need to be a programmer to create VarStreams datas.
+- Streamable : No need to wait the datas to be fully loaded to populate/access your program variables (use full for configuration files and localization files merging, web sockets realtime var loading ...).
 - Self referencable : you can refer to another variable of the stream in the stream itself, wich is not possible with JSON.
 
 VarStream program is free to use for any purpose (GNU/GPL), VarStream format is royalty free, i pushed it in the public domain. French speaking developpers can get a introduction to VarStreams here : http://www.insertafter.com/articles-remplacer_json_par_varstream.html . English version will come soon.
 
 How to use
 -------------
+<pre>
 var myScope={};
 var myStream=new VarStream(myScope,true);
 myStream.read(''); // Reading empty chunk
@@ -26,6 +27,7 @@ console.log(myScope.database.hosts[0].domain); // printsmysql1.example.com
 console.log(myScope.database.hosts[1].domain); // printsmysql2.example.com
 console.log(myScope.database.hosts[2].domain); // printsmysql1.example.com
 console.log(myScope.database.hosts[3].domain); // printsmysql2.example.com
+</pre>
 
 Contributors
 -------------
