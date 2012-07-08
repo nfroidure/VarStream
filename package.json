@@ -1,5 +1,5 @@
 {
-    "name": "VarStream",
+    "name": "varstream",
     "description": "Stream variables beetween client/server.",
     "version": "0.1.1",
     "author": "Nicolas Froidure",
