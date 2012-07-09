@@ -73,9 +73,9 @@ VarStreamWriter.prototype.write = function (scope,context)
 		var index=context.lastIndexOf('.');
 		this.lastContext=(index!==false?context.substr(0,index):'');
 		// Calling back
-		this.callback(morphedContext+'='+scope+"\n");
+		this.callback(morphedContext+'='+(scope+'').replace(/(\r?\n)/igm,'\\'+"\n")+"\n");
 		}
 	};
 
-if(module)
+if(!(typeof(module)=='undefined'))
 	module.exports = VarStreamWriter;

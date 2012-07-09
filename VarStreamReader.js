@@ -8,7 +8,6 @@
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  *
  */
-console.log('VarStreamReader loaded !');
 var VarStreamReader=function(scope,debug)
 	{
 	this.rootScope=scope; // The main scope
@@ -338,5 +337,5 @@ VarStreamReader.prototype.read = function (chunk)
 		}
 	};
 
-if(module)
+if(!(typeof(module)=='undefined'))
 	module.exports = VarStreamReader;
