@@ -65,7 +65,7 @@ VarStreamWriter.prototype.write = function (scope,context)
 			}
 		// Trying to reduce context with "
 		var morphedContext=context;
-		if(this.morphContexts&&this.lastContext&&morphedContext.indexOf(this.lastContext)===0)
+		if(this.morphContexts&&this.lastContext&&morphedContext.indexOf(this.lastContext+'.')===0)
 			{
 			morphedContext=morphedContext.replace(this.lastContext,'"')
 			}
