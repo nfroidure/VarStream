@@ -1,0 +1,8 @@
+# Database'
+database.type=mysql
+database.hosts.+.domain=mysql1.example.com
+database.hosts.*.master=true
+database.hosts.+.domain=mysql2.example.com
+".master=false
+database.hosts.+&=database.hosts.0
+database.hosts.+.domain&=database.hosts.1.domain
