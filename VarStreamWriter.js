@@ -7,6 +7,9 @@
  * Foundation, in version 3. It is distributed in the
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  *
+ * This object is NodeJs independent
+ *
+ *
  */
 
 var VarStreamWriter=function(callback,mergeArrays,morphContexts,debug)

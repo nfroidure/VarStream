@@ -7,6 +7,10 @@
  * Foundation, in version 3. It is distributed in the
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  *
+ * This object is NodeJs independent
+ *
+ * Important warning ! Should evaluate the right member first in case of backward referencing with * or + in the two sides
+ *
  */
 var VarStreamReader=function(scope,debug)
 	{
