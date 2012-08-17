@@ -1,7 +1,7 @@
 {
     "name": "varstream",
     "description": "Stream variables beetween client/server.",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "author": "Nicolas Froidure",
     "repository": {
         "type": "git",

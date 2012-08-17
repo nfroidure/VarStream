@@ -10,9 +10,25 @@ VarStream program is free to use for any purpose (GNU/GPL), VarStream format is 
 
 How to use
 -------------
+
+NodeJs :
+<pre>
+var VarStream = require('varstream');
+var fs = require('fs');
+
+var scope = {}; // The scope in wich i want vars to be loaded
+var myVarStream=new VarStream(scope, true);
+fs.createReadStream('test.dat').pipe(myVarStream) // Reading var stream from a ReadStream
+  .on('end', function () {
+	console.log(scope);
+	myVarStream.pipe(fs.createWriteStream('test2.dat')); // Piping VarStream to a WriteStream
+	});
+</pre>
+
+Browser :
 <pre>
 var myScope={};
-var myStreamReader=new VarStreamReader(myScope,true);
+var myStreamReader=new VarStreamReader(myScope,true); // May use XHR to load VarStreams
 myStreamReader.read(''); // Reading empty chunk
 myStreamReader.read('#comment'); // This is a comment
 myStreamReader.read('# Database'
