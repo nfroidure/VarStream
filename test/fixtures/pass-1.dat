@@ -1,0 +1,30 @@
+# Simple value
+aaaSimpleIntValue=1
+aaaSimpleBoolValue=true
+aaaSimpleFloatValue=1.0025
+aaaSimpleVarcharValue=I'm the king of the world !
+# Erasing those values
+aaaSimpleIntValue=2
+aaaSimpleBoolValue=false
+aaaSimpleFloatValue=1.0026
+aaaSimpleVarcharValue=I'm the king of the world ! Flop.
+# Simple tree
+aaSimpleTree.branch1=value1
+aaSimpleTree.branch2=value2
+aaSimpleTree.branch3=value3
+# Backward references
+".branch4=value4
+".branch5=value5
+# Simple array
+aSimpleArray.0.test.test=Good !
+aSimpleArray.1.test.test=Good 1 !
+aSimpleArray.*.test2.test=Good 1 !
+# Array pop
+aSimpleArray.+.test.test=Good pop 2 !
+# Multiline values
+bMultilineValue=sqsdqsdqsD\
+QDQSDQSDQSDQSD\
+QSSDQSDQSDQSDQS
+bMultilineValue2=DQSDQSDqsÊ\
+qdqsdqsdqsdqs\
+qsdqsdqsdqsdqs\
