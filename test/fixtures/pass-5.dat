@@ -1,0 +1,8 @@
+# Array refill
+aSimpleArray.0.test.test=Good !
+aSimpleArray.1.test.test=Good 1 !
+aSimpleArray.*.test2.test=Good 1+ !
+aSimpleArray.+.test.test=Good pop 2 !
+aSimpleArray.*.test2.test=Good pop 2+ !
+# References
+aSimpleArray.+.test.test&=aSimpleArray.0.test.test

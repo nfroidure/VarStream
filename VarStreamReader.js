@@ -41,12 +41,11 @@ VarStreamReader.prototype.read = function (chunk)
 				if(this.debug)
 					log+='- Value continues on the next line'+"\n";
 				currentValue+="\n";
-				i=i+1;
+				i=i+2;
 				if(i==x-1)
 					{
 					if(this.debug)
 						log+='- Value continues on the next line but the chunk ends'+"\n";
-					this.multilineValue=true;
 					}
 				}
 			else if(chunk[i]!="\n"&&chunk[i]!="\r")
@@ -80,7 +79,9 @@ VarStreamReader.prototype.read = function (chunk)
 				}
 			if(this.debug)
 				console.log('- Comment : '+log+'.'+"\n");
+			i++;
 			line++;
+			continue;
 			}
 		else if(chunk[i]=="\n"||chunk[i]=="\r")
 			{
@@ -171,18 +172,22 @@ VarStreamReader.prototype.read = function (chunk)
 					if(this.debug)
 						log+='- Working on the last array element, change node name from * to '+currentLeftNode+'.'+"\n";
 					}
-				if(chunk[i]=='='||chunk[i]=='&'||chunk[i]=="\n"||chunk[i]=="\r")
+				if(chunk[i]=='='||chunk[i]=='&')
 					break;
+				if(chunk[i]=="\n"||chunk[i]=="\r")
+					{ i++; break; }
+				console.log(log);
 				if(/^([0-9]+)$/.test(''+currentLeftNode)&&!(this.currentVar instanceof Array))
 					{
 					if(parentLeftNode)
 						{
-						this.currentVar=this.currentScopes[this.currentScopes.length-2][parentLeftNode]=new Array();
+						//this.currentVar=this.currentScopes[this.currentScopes.length-2][parentLeftNode]=new Array();
+						this.currentVar=(this.currentScopes.length>1?this.currentScopes[this.currentScopes.length-2]:this.rootScope)[parentLeftNode]=new Array();
 						if(this.debug)
 							log+='- Parent node was not an array.'+"\n";
-							}
-						else if(this.debug)
-								log+='- Parent node was not an array but is the root scope.'+"\n";
+						}
+					else if(this.debug)
+						log+='- Parent node was not an array but is the root scope.'+"\n";
 					}
 				if(!(this.currentVar[currentLeftNode] instanceof Object))
 					this.currentVar[currentLeftNode]=new Object();
@@ -258,6 +263,8 @@ VarStreamReader.prototype.read = function (chunk)
 							{
 							if(this.debug)
 								log+='- No more node.'+"\n";
+							if(chunk[i]=="\n"||chunk[i]=="\r")
+								i++;
 							break;
 							}
 						if(/^([0-9]+)$/.test(''+currentRightNode)&&!(currentRightVar instanceof Array))
@@ -302,7 +309,7 @@ VarStreamReader.prototype.read = function (chunk)
 						if(this.debug)
 							log+='- Value continues on the next line.'+"\n";
 						currentValue+="\n";
-						i=i+1;
+						i=i+2;
 						if(i>=x-1)
 							{
 							if(this.debug)
@@ -313,7 +320,7 @@ VarStreamReader.prototype.read = function (chunk)
 					else if(chunk[i]!="\n"&&chunk[i]!="\r")
 						currentValue+=chunk[i];
 					else
-						break;
+						{ i++; break; }
 					}
 				if(this.debug)
 					log+='- Var value: '+currentValue+'.'+"\n";

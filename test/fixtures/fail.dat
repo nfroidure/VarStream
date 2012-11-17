@@ -1,0 +1,5 @@
+# Things that fails but shouldn't
+# Must evaluate right side before the left side.
+# Here are the problems that are causing by this issue
+aSimpleArray.+.test.test&=aSimpleArray.*.test.test
+# After it, aSimpleArray.* should be aSimpleArray.4, but it is aSimpleArray.5 that is undefined

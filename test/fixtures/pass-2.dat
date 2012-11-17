@@ -1,13 +1,12 @@
-sdfdsfdsfdsf\
-sdfdsfdsf
-# Array reset
-aSimpleArray.!.test.test=Good reset !
-# Array refill
-aSimpleArray.0.test.test=Good !
-aSimpleArray.1.test.test=Good 1 !
-aSimpleArray.*.test2.test=Good 1+ !
-aSimpleArray.+.test.test=Good pop 2 !
-aSimpleArray.*.test2.test=Good pop 2+ !
-# References
-aSimpleArray.+.test.test=&aSimpleArray.0.test.test
-aSimpleArray.*.test2.test=&aSimpleArray.*.test.test
+# Erasing those values
+aaaSimpleIntValue=2
+aaaSimpleBoolValue=false
+aaaSimpleFloatValue=1.0026
+aaaSimpleVarcharValue=I'm the king of the world ! Flop.
+# Simple tree
+aaSimpleTree.branch1=value1
+aaSimpleTree.branch2=value2
+aaSimpleTree.branch3=value3
+# Backward references
+".branch4=value4
+".branch5=value5
