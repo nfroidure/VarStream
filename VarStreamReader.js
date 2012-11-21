@@ -118,17 +118,28 @@ VarStreamReader.prototype.read = function (chunk)
 				{
 				if(this.debug)
 					log+=' (-'+parseInt(chunk[i+2])+')';
-				if(this.currentScopes.length==parseInt(chunk[i+2]))
+				if(this.currentScopes.length>parseInt(chunk[i+2]))
 					{
-					for(var j=parseInt(chunk[i+2]); j>0; j--)
+					console.log(this.currentScopes);
+					for(var j=parseInt(chunk[i+2])+1; j>0; j--)
 						{
 						this.currentVar=this.currentScopes.pop();
 						}
 					i=i+4;
 					this.currentScopes.push(this.currentVar);
 					}
-				else	if(this.debug)
-					log+=' (unavailable)';
+				else
+					{
+					if(this.debug)
+						log+=' (unavailable)';
+					while(i<x&&chunk[i]!="\n"&&chunk[i]!="\r")
+						{
+						if(this.debug)
+							log+=chunk[i];
+						i++;
+						}
+					continue;
+					}
 				}
 			if(this.debug)
 				log+="\n";
@@ -176,7 +187,6 @@ VarStreamReader.prototype.read = function (chunk)
 					break;
 				if(chunk[i]=="\n"||chunk[i]=="\r")
 					{ i++; break; }
-				console.log(log);
 				if(/^([0-9]+)$/.test(''+currentLeftNode)&&!(this.currentVar instanceof Array))
 					{
 					if(parentLeftNode)

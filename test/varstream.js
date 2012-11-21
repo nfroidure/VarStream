@@ -6,7 +6,6 @@ function read_stream_1 (scope,myVarStream) {
   return function (done) {
 	fs.createReadStream(__dirname+'/fixtures/pass-1.dat').pipe(myVarStream) 
 	.once('end', function () {
-		console.log('edrrteret');
 		expect(scope.aaaSimpleIntValue).to.eql('1');
 		expect(scope.aaaSimpleBoolValue).to.eql(true);
 		expect(scope.aaaSimpleFloatValue).to.eql('1.0025');
@@ -79,11 +78,24 @@ function read_stream_5 (scope,myVarStream) {
 	};
 }
 
+function read_stream_6 (scope,myVarStream) {
+  return function (done) {
+	fs.createReadStream(__dirname+'/fixtures/pass-6.dat').pipe(myVarStream) 
+	.once('end', function () {
+		console.log(scope.aSimpleArray[5]);
+		expect(scope.aSimpleArray[4].test.test).to.eql("Final pop modified !");
+		expect(scope.aSimpleArray[5].test.test).to.eql("New final pop !");
+		expect(scope.aSimpleArray[6].test.test).to.eql("New final pop modified !");
+		done();
+		});
+	};
+}
+
 function read_stream_fail (scope,myVarStream) {
   return function (done) {
 	fs.createReadStream(__dirname+'/fixtures/fail.dat').pipe(myVarStream) 
 	.once('end', function () {
-		expect(scope.aSimpleArray[5]).to.eql(undefined);
+		expect(scope.aSimpleArray[8]).to.eql(undefined);
 		done();
 		});
 	};
@@ -91,11 +103,12 @@ function read_stream_fail (scope,myVarStream) {
 
 describe('Read stream', function () {
 	var scope = {};
-	var myVarStream=new VarStream(scope,true);
+	var myVarStream=new VarStream(scope, true);
 	it('should read stream sample #1', read_stream_1(scope,myVarStream));
 	it('should read stream sample #2', read_stream_2(scope,myVarStream));
 	it('should read stream sample #3', read_stream_3(scope,myVarStream));
 	it('should read stream sample #4', read_stream_4(scope,myVarStream));
 	it('should read stream sample #5', read_stream_5(scope,myVarStream));
+	it('should read stream sample #6', read_stream_6(scope,myVarStream));
 	it('should read stream that fails', read_stream_fail(scope,myVarStream));
 });
