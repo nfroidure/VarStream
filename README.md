@@ -10,6 +10,9 @@ VarStream is a variable exchange format designed to replace JSON for situations 
 - - test1 : linear.dat [390 bytes] vs linear.json [423 bytes] => 8% smaller
 - - test2 : arrays.dat [1244 bytes] vs arrays.json [1178 bytes] => 6% bigger
 - - test3 : references.dat [2844 bytes] vs references.json [3314 bytes] => 16% smaller
+- Save memory : the garbage collector can cleanup memory before the parse ends, references prevent data duplication.
+- Comments friendly : Keeps your configuration/localization files readable.
+- Circular references friendly : transmit your data trees with no hacks.
 
 VarStream program is free to use for any purpose (GNU/GPL), VarStream format is royalty free, i pushed it in the public domain. French speaking developpers can get a introduction to VarStreams here : http://www.insertafter.com/articles-remplacer_json_par_varstream.html . English version will come soon.
 
