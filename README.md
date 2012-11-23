@@ -3,7 +3,7 @@ VarStream
 
 VarStream is a variable exchange format designed to replace JSON for situations when it reaches its limits. VarStream has many advantages :
 - Human readable/writeable : no need to be a programmer to create VarStream datas.
-- Streamable : No need to wait the datas to be fully loaded to populate/access your program variables (usefull for configuration files and localization files merging, web sockets realtime var loading ...).
+- Streamable : No need to wait the datas to be fully loaded to populate/access your program variables (usefull for web sockets realtime var loading and ui reactivity...).
 - Self referencable : you can refer to another variable of the stream in the stream itself, wich is not possible with JSON.
 - Mergeable : you easily merge multiple varstreams with no loss (usefull for configuration files and localization files merging...).
 - Lighter most of the time : Due to it's smart optimizations (self reference, backward reference) :
@@ -15,6 +15,13 @@ VarStream is a variable exchange format designed to replace JSON for situations 
 - Circular references friendly : transmit your data trees with no hacks.
 
 VarStream program is free to use for any purpose (GNU/GPL), VarStream format is royalty free, i pushed it in the public domain. French speaking developpers can get a introduction to VarStreams here : http://www.insertafter.com/articles-remplacer_json_par_varstream.html . English version will come soon.
+
+Test it !
+-------------
+- change the ui before all datas load : http://server.elitwork.com/experiments/pagestream/index.html
+- loading charts progressively : http://server.elitwork.com/experiments/chartstream/index.html
+- communicate smoothly with web sockets : https://github.com/nfroidure/WebSockIPC
+- send me yours !
 
 How to use
 -------------
