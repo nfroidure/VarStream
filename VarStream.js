@@ -70,3 +70,4 @@ VarStream.prototype.destroy = function()
 VarStream.prototype.VarStreamReader=VarStreamReader;
 VarStream.prototype.VarStreamWriter=VarStreamWriter;
 module.exports = VarStream;
+

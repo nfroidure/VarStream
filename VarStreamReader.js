@@ -360,3 +360,4 @@ VarStreamReader.prototype.read = function (chunk)
 
 if(!(typeof(module)=='undefined'))
 	module.exports = VarStreamReader;
+

@@ -82,3 +82,4 @@ VarStreamWriter.prototype.write = function (scope,context)
 
 if(!(typeof(module)=='undefined'))
 	module.exports = VarStreamWriter;
+
