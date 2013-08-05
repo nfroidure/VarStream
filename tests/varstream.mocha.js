@@ -1,4 +1,4 @@
-var VarStream = require('../VarStream')
+var VarStream = require('../src/VarStream')
 	, fs = require('fs')
 	, assert = require('assert');
 
@@ -9,7 +9,7 @@ var VarStream = require('../VarStream')
 describe('Reading a varstream', function() {
 
 	var scope = {};
-	var myVarStream=new VarStream(scope, true);
+	var myVarStream=new VarStream(scope);
 
 	it("should work for simple datas", function(done) {
 		fs.createReadStream(__dirname+'/fixtures/1-simple.dat').pipe(myVarStream)
@@ -49,27 +49,28 @@ describe('Reading a varstream', function() {
 	it("should work for data trees", function(done) {
 		fs.createReadStream(__dirname+'/fixtures/2-trees.dat').pipe(myVarStream) 
 			.once('end', function () {
-				assert.equal(typeof treeRoot.branch1,'object');
-				assert.equal(treeRoot.branch1.aSimpleIntValue,1898);
-				assert.equal(treeRoot.branch1.aSimpleIntNegativeValue,-1669);
-				assert.equal(typeof treeRoot.branch2,'object');
-				assert.equal(treeRoot.branch2.aSimpleFloatValue,1.0025);
-				assert.equal(treeRoot.branch2.aSimpleFloatNegativeValue,-1191.0025);
-				assert.equal(typeof treeRoot.branch3,'object');
-				assert.equal(treeRoot.branch3.aSimpleBoolValueTrue,true);
-				assert.equal(treeRoot.branch3.aSimpleBoolValueFalse,false);
-				assert.equal(typeof treeRoot.branch3.branch1,'object');
-				assert.equal(treeRoot.branch3.branch1.aSimpleNullValue,null);
-				assert.equal(treeRoot.branch3.branch1.aSimpleStringValue,
+				assert.equal(typeof scope.treeRoot.branch1,'object');
+				assert.equal(scope.treeRoot.branch1.aSimpleIntValue,1898);
+				assert.equal(scope.treeRoot.branch1.aSimpleIntNegativeValue,-1669);
+				assert.equal(typeof scope.treeRoot.branch2,'object');
+				assert.equal(scope.treeRoot.branch2.aSimpleFloatValue,1.0025);
+				assert.equal(scope.treeRoot.branch2.aSimpleFloatNegativeValue,
+					-1191.0025);
+				assert.equal(typeof scope.treeRoot.branch3,'object');
+				assert.equal(scope.treeRoot.branch3.aSimpleBoolValueTrue,true);
+				assert.equal(scope.treeRoot.branch3.aSimpleBoolValueFalse,false);
+				assert.equal(typeof scope.treeRoot.branch3.branch1,'object');
+				assert.equal(scope.treeRoot.branch3.branch1.aSimpleNullValue,null);
+				assert.equal(scope.treeRoot.branch3.branch1.aSimpleStringValue,
 					"I'm the king of the world!");
-				assert.equal(typeof treeRoot.branch3.branch2,'object');
-				assert.equal(treeRoot.branch3.branch2.aSimpleStringMultilineValue,
+				assert.equal(typeof scope.treeRoot.branch3.branch2,'object');
+				assert.equal(scope.treeRoot.branch3.branch2.aSimpleStringMultilineValue,
 					"I'm the king of the world!\nYou know!\nIt's true.");
-				assert.equal(treeRoot.branch3.branch2.aSimpleWellDeclaredStringValue,
+				assert.equal(scope.treeRoot.branch3.branch2.aSimpleWellDeclaredStringValue,
 					"I'm the king of the world!");
-				assert.equal(typeof treeRoot.branch3.branch2.branch1,'object');
+				assert.equal(typeof scope.treeRoot.branch3.branch2.branch1,'object');
 				assert.equal(
-					treeRoot.branch3.branch2.branch1.aSimpleWellDeclaredStringMultilineValue,
+					scope.treeRoot.branch3.branch2.branch1.aSimpleWellDeclaredStringMultilineValue,
 					"I'm the king of the world!\nYou \"know\"!\nIt's true.");
 				done();
 			});
@@ -79,10 +80,10 @@ describe('Reading a varstream', function() {
 	it("should deleted empty datas", function(done) {
 		fs.createReadStream(__dirname+'/fixtures/3-delete.dat').pipe(myVarStream) 
 		.once('end', function () {
-			assert.equal(typeof treeRoot.branch1.aSimpleIntNegativeValue,'undefined');
-			assert.equal(typeof treeRoot.branch2,'undefined');
-			assert.equal(typeof treeRoot.branch3.aSimpleBoolValueTrue,'undefined');
-			assert.equal(typeof treeRoot.branch3.branch1.aSimpleStringValue,'undefined');
+			assert.equal(typeof scope.treeRoot.branch1.aSimpleIntNegativeValue,'undefined');
+			assert.equal(typeof scope.treeRoot.branch2,'undefined');
+			assert.equal(typeof scope.treeRoot.branch3.aSimpleBoolValueTrue,'undefined');
+			assert.equal(typeof scope.treeRoot.branch3.branch1.aSimpleStringValue,'undefined');
 			done();
 		});
 	});
@@ -91,27 +92,27 @@ describe('Reading a varstream', function() {
 	it("should take backward references in count", function(done) {
 		fs.createReadStream(__dirname+'/fixtures/4-backward.dat').pipe(myVarStream) 
 		.once('end', function () {
-				assert.equal(typeof treeRoot.branch1,'object');
-				assert.equal(treeRoot.branch1.aSimpleIntValue,2000);
-				assert.equal(treeRoot.branch1.aSimpleIntNegativeValue,-2000);
-				assert.equal(typeof treeRoot.branch2,'object');
-				assert.equal(treeRoot.branch2.aSimpleFloatValue,2.0001);
-				assert.equal(treeRoot.branch2.aSimpleFloatNegativeValue,-1000.0002);
-				assert.equal(typeof treeRoot.branch3,'object');
-				assert.equal(treeRoot.branch3.aSimpleBoolValueTrue,true);
-				assert.equal(treeRoot.branch3.aSimpleBoolValueFalse,false);
-				assert.equal(typeof treeRoot.branch3.branch1,'object');
-				assert.equal(treeRoot.branch3.branch1.aSimpleNullValue,null);
-				assert.equal(treeRoot.branch3.branch1.aSimpleStringValue,
+				assert.equal(typeof scope.treeRoot.branch1,'object');
+				assert.equal(scope.treeRoot.branch1.aSimpleIntValue,2000);
+				assert.equal(scope.treeRoot.branch1.aSimpleIntNegativeValue,-2000);
+				assert.equal(typeof scope.treeRoot.branch2,'object');
+				assert.equal(scope.treeRoot.branch2.aSimpleFloatValue,2.0001);
+				assert.equal(scope.treeRoot.branch2.aSimpleFloatNegativeValue,-1000.0002);
+				assert.equal(typeof scope.treeRoot.branch3,'object');
+				assert.equal(scope.treeRoot.branch3.aSimpleBoolValueTrue,true);
+				assert.equal(scope.treeRoot.branch3.aSimpleBoolValueFalse,false);
+				assert.equal(typeof scope.treeRoot.branch3.branch1,'object');
+				assert.equal(scope.treeRoot.branch3.branch1.aSimpleNullValue,null);
+				assert.equal(scope.treeRoot.branch3.branch1.aSimpleStringValue,
 					"I'm not the king of the world!");
-				assert.equal(typeof treeRoot.branch3.branch2,'object');
-				assert.equal(treeRoot.branch3.branch2.aSimpleStringMultilineValue,
+				assert.equal(typeof scope.treeRoot.branch3.branch2,'object');
+				assert.equal(scope.treeRoot.branch3.branch2.aSimpleStringMultilineValue,
 					"I'm not the king of the world!\nYou know!\nIt's true.");
-				assert.equal(treeRoot.branch3.branch2.aSimpleWellDeclaredStringValue,
+				assert.equal(scope.treeRoot.branch3.branch2.aSimpleWellDeclaredStringValue,
 					"I'm not the king of the world!");
-				assert.equal(typeof treeRoot.branch3.branch2.branch1,'object');
+				assert.equal(typeof scope.treeRoot.branch3.branch2.branch1,'object');
 				assert.equal(
-					treeRoot.branch3.branch2.branch1.aSimpleWellDeclaredStringMultilineValue,
+					scope.treeRoot.branch3.branch2.branch1.aSimpleWellDeclaredStringMultilineValue,
 					"I'm not the king of the world!\nYou \"know\"!\nIt's true.");
 			done();
 		});
@@ -122,7 +123,7 @@ describe('Reading a varstream', function() {
 		.once('end', function () {
 				// Numbers
 				assert.equal(typeof scope.aSimpleIntValue, 'number');
-				assert.equal(scope.aSimpleIntValue,(((1898+5)*2)-15)/);
+				assert.equal(scope.aSimpleIntValue,((1898+5)*2)-15);
 				assert.equal(typeof scope.aSimpleIntNegativeValue, 'number');
 				assert.equal(scope.aSimpleIntNegativeValue,(((-1669)+6)*-3)-1);
 				assert.equal(typeof scope.aSimpleFloatValue, 'number');
@@ -190,7 +191,7 @@ describe('Reading a varstream', function() {
 	it("Should work with truncated content beetween chunks", function(done) {
 		fs.createReadStream(__dirname+'/fixtures/7-truncated-part1.dat').pipe(myVarStream) 
 		.once('end', function () {
-			done();
+			//done();
 			});
 		fs.createReadStream(__dirname+'/fixtures/7-truncated-part2.dat').pipe(myVarStream) 
 		.once('end', function () {
@@ -202,7 +203,7 @@ describe('Reading a varstream', function() {
 
 describe('Reading bad varstreams', function() {
 
-	it("should raise exceptions when", function(done) {
+	it("should raise exceptions when", function() {
 
 		it("a line ends with no =", function(done) {
 			try {
