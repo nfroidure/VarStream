@@ -1,4 +1,4 @@
-VarStream
+VarStream - v1
 ============
 
 VarStream is a variable exchange format designed to replace JSON for situations when it reaches its limits. VarStream has many advantages :
