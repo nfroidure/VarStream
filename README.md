@@ -1,5 +1,7 @@
-VarStream - v1
+VarStream - v2
 ============
+
+WARNING : This VarStream version is currently under development !
 
 VarStream is a variable exchange format designed to replace JSON for situations when it reaches its limits. VarStream has many advantages :
 - Human readable/writeable : no need to be a programmer to create VarStream datas.
