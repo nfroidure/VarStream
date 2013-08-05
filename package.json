@@ -1,7 +1,7 @@
 {
 	"name": "varstream",
 	"description": "Stream variables beetween 2 JavaScript threads (client/server, ipc, worker/main thread).",
-	"version": "0.1.2",
+	"version": "0.2",
 	"author": "Nicolas Froidure",
 	"repository": {
 	"type": "git",
@@ -12,11 +12,10 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"chai": "~1.3.0",
 		"mocha": "~1.7.0"
 	},
 	"scripts": {
-		"test": "./node_modules/.bin/_mocha -R list -u bdd"
+		"test": "mocha tests/*.mocha.js"
 	},
 	"keywords": [
 		"variable",
@@ -31,5 +30,5 @@
 		"localization",
 		"configuration"
 	],
-	"main": "./VarStream"
+	"main": "./src/VarStream"
 	}
