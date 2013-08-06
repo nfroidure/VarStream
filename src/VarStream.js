@@ -54,9 +54,9 @@ VarStream.prototype.resume = function() {
 VarStream.prototype.pipe = function(writeStream) {
 	var self=this;
 	var writer=new VarStreamWriter(function(data) {
-		writeStream.write(data,'utf8');
+			writeStream.write(data,'utf8');
 		}, true, true, true);
-	writer.write(this.scope.root,this.scope.prop);
+	writer.write(this.scope.root[this.scope.prop]);
 };
 
 // Common
