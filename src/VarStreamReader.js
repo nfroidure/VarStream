@@ -62,8 +62,8 @@
 		// Parsing status
 		, PARSE_NEWLINE = 1
 		, PARSE_LVAL = 2
-		, PARSE_RVAL = 3
-		, PARSE_OPERATOR = 4
+		, PARSE_OPERATOR = 3
+		, PARSE_RVAL = 4
 		, PARSE_MLSTRING = 5
 		, PARSE_COMMENT = 6
 		, PARSE_SILENT = 7
@@ -283,8 +283,9 @@
 						this.currentVar=this.rightValue;
 						// if the newline was escaped, continue to read the string
 						if(this.escaped) {
-							this.state=PARSE_MLSTRING;
 							this.escaped=false;
+							this.state=PARSE_MLSTRING;
+							this.leftValue.root[this.leftValue.prop]+=chunk[i];
 						} else {
 							this.state=PARSE_NEWLINE;
 						}
@@ -295,6 +296,15 @@
 					continue;
 				// Parse the content of a multiline value
 				case PARSE_MLSTRING:
+					if((!this.escaped)&&(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR)) {
+						this.state=PARSE_NEWLINE;
+					} else {
+						if(this.escaped) {
+							this.escaped=false;
+						}
+						this.leftValue.root[this.leftValue.prop]+=chunk[i];
+					}
+					continue;
 				// Finding the = char after an operator
 				case PARSE_OPERATOR:
 					if(chunk[i]===CHR_EQ) {
