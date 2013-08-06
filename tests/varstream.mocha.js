@@ -199,12 +199,88 @@ describe('Reading a varstream', function() {
 	it("Should work with truncated content beetween chunks", function(done) {
 		fs.createReadStream(__dirname+'/fixtures/7-truncated-part1.dat').pipe(myVarStream) 
 		.once('end', function () {
-			//done();
-			});
+			done();
+		});
+	});
+
+	it("Should work with truncated content beetween chunks", function(done) {
 		fs.createReadStream(__dirname+'/fixtures/7-truncated-part2.dat').pipe(myVarStream) 
 		.once('end', function () {
 			done();
-			});
+		});
+	});
+
+	it("Should interpret rightvals first", function(done) {
+		fs.createReadStream(__dirname+'/fixtures/8-rightval.dat').pipe(myVarStream) 
+		.once('end', function () {
+				assert.equal(scope.vars.aSimpleArray[0],10);
+				assert.equal(scope.vars.aSimpleArray[1],10);
+				assert.equal(scope.vars.aSimpleArray2[0].value,9);
+				assert.equal(scope.vars.aSimpleArray2[1].value,9);
+			done();
+		});
+	});
+
+});
+
+describe('Reading chunked varstreams', function() {
+
+	it("Should work at the lval level", function() {
+		var scope = {};
+		var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+		myVarStream.read('aVar1=ok\naVa');
+		assert.equal(scope.vars.aVar1,'ok');
+		assert.equal(typeof scope.vars.aVar2,'undefined');
+		myVarStream.read('r2=1000\naVar3=2000\n');
+		assert.equal(scope.vars.aVar2,1000);
+		assert.equal(scope.vars.aVar3,2000);
+	});
+
+	it("Should work at the operator level", function() {
+		var scope = {};
+		var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+		myVarStream.read('aVar1=ok\naVar2');
+		assert.equal(scope.vars.aVar1,'ok');
+		assert.equal(typeof scope.vars.aVar2,'undefined');
+		myVarStream.read('=1000\naVar3=2000\n');
+		assert.equal(scope.vars.aVar2,1000);
+		assert.equal(scope.vars.aVar3,2000);
+	});
+
+	it("Should work at the next operator level", function() {
+		var scope = {};
+		var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+		myVarStream.read('aVar1=ok\naVar2=');
+		assert.equal(scope.vars.aVar1,'ok');
+		assert.equal(typeof scope.vars.aVar2,'undefined');
+		myVarStream.read('1000\naVar3=2000\n');
+		assert.equal(scope.vars.aVar2,1000);
+		assert.equal(scope.vars.aVar3,2000);
+	});
+
+	it("Should work at the rval level", function() {
+		var scope = {};
+		var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+		myVarStream.read('aVar1=ok\naVar2=1');
+		assert.equal(scope.vars.aVar1,'ok');
+		assert.equal(typeof scope.vars.aVar2,'undefined');
+		myVarStream.read('000\naVar3=2000\n');
+		assert.equal(scope.vars.aVar2,1000);
+		assert.equal(scope.vars.aVar3,2000);
+	});
+
+	it("Should work at the multiline level", function() {
+		var scope = {};
+		var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+		myVarStream.read('aVar1=ok\naVar2=Y');
+		assert.equal(scope.vars.aVar1,'ok');
+		assert.equal(typeof scope.vars.aVar2,'undefined');
+		myVarStream.read('ep!\\\n');
+		assert.equal(scope.vars.aVar2,'Yep!\n');
+		myVarStream.read(' That\'');
+		assert.equal(scope.vars.aVar2,'Yep!\n That\'');
+		myVarStream.read('s me!\n');
+		assert.equal(scope.vars.aVar2,'Yep!\n That\'s me!');
 	});
 
 });
@@ -216,7 +292,7 @@ describe('Reading bad varstreams', function() {
 		it("a line ends with no =", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar\n');
 				myVarStream.end();
 			} catch(e) {
@@ -227,7 +303,7 @@ describe('Reading bad varstreams', function() {
 		it("a line ends with no =", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar\n');
 				myVarStream.end();
 			} catch(e) {
@@ -238,7 +314,7 @@ describe('Reading bad varstreams', function() {
 		it("a line ends with no value after &=", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar\n');
 				myVarStream.end();
 			} catch(e) {
@@ -249,7 +325,7 @@ describe('Reading bad varstreams', function() {
 		it("a line ends with no value after &=", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar&=\n');
 				myVarStream.end();
 			} catch(e) {
@@ -260,7 +336,7 @@ describe('Reading bad varstreams', function() {
 		it("a line ends with no value after +=", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar+=\n');
 				myVarStream.end();
 			} catch(e) {
@@ -271,7 +347,7 @@ describe('Reading bad varstreams', function() {
 		it("a line ends with no value after -=", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar-=\n');
 				myVarStream.end();
 			} catch(e) {
@@ -282,7 +358,7 @@ describe('Reading bad varstreams', function() {
 		it("a line ends with no value after *=", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar*=\n');
 				myVarStream.end();
 			} catch(e) {
@@ -293,7 +369,7 @@ describe('Reading bad varstreams', function() {
 		it("a line ends with no value after /=", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar/=\n');
 				myVarStream.end();
 			} catch(e) {
@@ -304,7 +380,7 @@ describe('Reading bad varstreams', function() {
 		it("there are a empty node at start", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('.ASimpleVar=true\n');
 				myVarStream.end();
 			} catch(e) {
@@ -315,7 +391,7 @@ describe('Reading bad varstreams', function() {
 		it("there are a empty node at start", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar.prop..prop.prop=true\n');
 				myVarStream.end();
 			} catch(e) {
@@ -326,7 +402,7 @@ describe('Reading bad varstreams', function() {
 		it("there are a empty node at end", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar.=false\n');
 				myVarStream.end();
 			} catch(e) {
@@ -337,7 +413,7 @@ describe('Reading bad varstreams', function() {
 		it("there are malformed nodes", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimp-+leVar.ds+d=false\n');
 				myVarStream.end();
 			} catch(e) {
@@ -348,7 +424,7 @@ describe('Reading bad varstreams', function() {
 		it("there are backward reference on an empty scope", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('^.test=true\n');
 				myVarStream.end();
 			} catch(e) {
@@ -359,7 +435,7 @@ describe('Reading bad varstreams', function() {
 		it("there are out of range backward reference", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar.prop1.prop2=false\n^4.test=true\n');
 				myVarStream.end();
 			} catch(e) {
@@ -370,7 +446,7 @@ describe('Reading bad varstreams', function() {
 		it("there are malformed backward reference", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar.prop1.prop2=false\n^4b.test=true\n');
 				myVarStream.end();
 			} catch(e) {
@@ -381,7 +457,7 @@ describe('Reading bad varstreams', function() {
 		it("there are malformed backward reference2", function(done) {
 			try {
 				var scope = {};
-				var myVarStream=new VarStream(scope,'vars', true);
+				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
 				myVarStream.read('ASimpleVar.prop1.prop2=false\n^b5.test=true\n');
 				myVarStream.end();
 			} catch(e) {
