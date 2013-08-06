@@ -16,58 +16,54 @@ var Stream = require('stream').Stream
   , VarStreamWriter=require('./VarStreamWriter')
   ;
 
-var VarStream=function(scope,debug)
-	{
-	this.readable=this.writable=(scope?true:false);
-	this.scope=scope;
-	this.reader=new VarStreamReader(scope,debug);
-	};
+var VarStream=function(rootObject, prop, strictMode) {
+	this.readable=this.writable=(rootObject&&prop?true:false);
+	this.scope={root:rootObject, prop:prop};
+	this.reader=new VarStreamReader(this.scope.root,this.scope.prop, strictMode);
+};
 util.inherits(VarStream, Stream);
+
 // Write part
-VarStream.prototype.write = function(data, encoding)
-	{
-    if (Buffer.isBuffer(data))
-		{
-		data = data.toString(encoding || 'utf8');
+VarStream.prototype.write = function(data, encoding) {
+    if(Buffer.isBuffer(data)) {
+			data = data.toString(encoding || 'utf8');
 		}
 	this.reader.read(data);
-	}
-VarStream.prototype.end = function()
-	{
+};
+
+VarStream.prototype.end = function() {
 	this.emit('end');
-	}
-VarStream.prototype.destroySoon = function()
-	{
-	}
-	// No error event throwed yet
-	// So no drain event throwed yet
+};
+
+VarStream.prototype.destroySoon = function() {
+
+};
+// No error event throwed yet
+// So no drain event throwed yet
+
 // Read part
-VarStream.prototype.setEncoding = function()
-	{
-	}
-VarStream.prototype.pause = function()
-	{
-	}
-VarStream.prototype.resume = function()
-	{
-	}
-VarStream.prototype.pipe = function(writeStream)
-	{
+VarStream.prototype.setEncoding = function() {
+};
+
+VarStream.prototype.pause = function() {
+};
+
+VarStream.prototype.resume = function() {
+};
+
+VarStream.prototype.pipe = function(writeStream) {
 	var self=this;
-	var writer=new VarStreamWriter(function(data)
-		{
+	var writer=new VarStreamWriter(function(data) {
 		writeStream.write(data,'utf8');
-		}
-		, true, true, true);
-	writer.write(this.scope);
-	}
+		}, true, true, true);
+	writer.write(this.scope.root,this.scope.prop);
+};
+
 // Common
-VarStream.prototype.destroy = function()
-	{
-	}
+VarStream.prototype.destroy = function() {
+};
 
 // Exporting
 VarStream.prototype.VarStreamReader=VarStreamReader;
 VarStream.prototype.VarStreamWriter=VarStreamWriter;
 module.exports = VarStream;
-

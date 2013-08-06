@@ -21,7 +21,7 @@
 	// Constructor
 	function VarStreamReader (scope, prop, strictMode) {
 		// Keep a ref to the root scope
-		this.rootScope={scope:scope,prop:prop};
+		this.rootScope={root:scope,prop:prop};
 		// Save the strictMode param
 		this.strictMode=(strictMode?strictMode:false);
 		// Store current scopes for backward references
@@ -69,14 +69,6 @@
 		, PARSE_SILENT = 7
 		;
 
-	VarStreamReader.prototype.resolveScope = function (nodes) {
-		var scope=this.rootScope;
-		for(var i=0, j=nodes.length; i<j; i++) {
-
-		}
-		return scope;
-	};
-
 	VarStreamReader.prototype.resolveScope = function (val) {
 		var nodes=val.split(CHR_SEP), scope=this.rootScope, n;
 		// Looking for backward refs in the first node
@@ -90,7 +82,6 @@
 					return null;
 				} else {
 					nodes.shift();
-					continue;
 				}
 			}
 			// if no numbers adding every previous nodes
@@ -224,6 +215,7 @@
 						continue;
 					}
 					// Store LVAL chars
+					this.state=PARSE_LVAL;
 					this.leftValue+=chunk[i];
 					continue;
 				// Read right value content
@@ -259,7 +251,7 @@
 							this.rightValue=NaN;
 						} else if(/^\-?([0-9]+(\.[0-9]+)?|Infinity)$/
 							.test(this.rightValue)) {
-							this.rightValue=Number(value);
+							this.rightValue=Number(this.rightValue);
 						}
 						// Compute lval
 						this.leftValue=this.resolveScope(this.leftValue);

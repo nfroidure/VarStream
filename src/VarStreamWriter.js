@@ -28,8 +28,9 @@
 			context='';
 		if(scope instanceof Array) {
 			for(var i=0, j=scope.length; i<j; i++) {
-				if(this.debug)
+				if(this.debug) {
 					console.log('Reading array entry '+i+' in scope '+context);
+				}
 				this.imbricatedArrayEntries.push(true);
 				this.write(scope[i],(context?context+'.':'')+(this.mergeArrays?'?':1));
 				this.imbricatedArrayEntries.pop();
