@@ -18,324 +18,186 @@
 (function(root,define){ define([], function() {
 // START: Module logic start
 
-	function VarStreamReader (scope,debug) {
-		this.rootScope=scope; // The main scope
-		this.currentScopes=new Array(); // Current scopes depth
-		this.currentVar=new Array(); // Current readed var
-		this.multilineValue=false; // Marker to know if the next chunk begins by a multine value
-		this.debug=(debug?debug:false);
+	// Constructor
+	function VarStreamReader (scope,strictMode) {
+		// Keep a ref to the root scope
+		this.rootScope=scope;
+		// Save the strictMode param
+		this.strictMode=(strictMode?strictMode:false);
+		// Store current scopes for backward references
+		this.currentScopes=new Array();
+		// The current readed var
+		this.currentVar=new Array();
+		// The parse state
+		this.state=PARSE_NEWLINE; // Marker to know if the next chunk begins by a multine value
+		// The current values
+		this.leftValue='';
+		this.rightValue='';
+		this.operator='';
+		this.escaped=false;
 	}
 
+	// Constants
+		// Chars
+	var CHR_ENDL = '\n'
+		, CHR_CR = '\r'
+		, CHR_SEP = '.'
+		, CHR_BCK = '^'
+		, CHR_EQ = '='
+		, CHR_ESC = '\\'
+		, CHR_PLU = '+'
+		, CHR_MIN = '-'
+		, CHR_MUL = '*'
+		, CHR_DIV = '/'
+		, CHR_MOD = '%'
+		, CHR_REF = '&'
+		, CHR_NEW = '!'
+		, CHR_COM = '#'
+		// Chars sets
+		, EQ_OPS = [CHR_PLU,CHR_MIN,CHR_MUL,CHR_DIV,CHR_MOD,CHR_REF]
+		, ARRAY_OPS = [CHR_PLU,CHR_MUL,CHR_NEW]
+		, NODE_CHARS = /^[a-zA-Z0-9\^\.]$/
+		// Parsing status
+		, PARSE_NEWLINE = 1
+		, PARSE_LVAL = 2
+		, PARSE_RVAL = 3
+		, PARSE_OPERATOR = 4
+		, PARSE_MLSTRING = 5
+		, PARSE_COMMENT = 6
+		, PARSE_SILENT = 7
+		;
+
 	VarStreamReader.prototype.read = function (chunk) {
-		var currentLeftNode, parentLeftNode, currentRightVar, currentRightNode, parentRightNode, currentValue, line=0, i=0, x=chunk.length;
-		// Parsing chunk content
-		if(this.debug) {
-			console.log('# Parsing a new chunk (length:'+chunk.length+').'+"\n");
-			var log='';
-		}
-		if(this.multilineValue) {
-			if(this.debug) {
-				console.log('Line '+line+' - Finishing to fill multiline value'+"\n");
-			}
-			currentValue='';
-			for(i,x; i<x; i++) {
-				if(chunk[i]=='\\'&&(chunk[i+1]=="\n"||chunk[i+1]=="\r"||i==x-1)) {
-					if(this.debug)
-						log+='- Value continues on the next line'+"\n";
-					currentValue+="\n";
-					i=i+2;
-					if(i==x-1) {
-						if(this.debug)
-							log+='- Value continues on the next line but the chunk ends'+"\n";
-					}
-				} else if(chunk[i]!="\n"&&chunk[i]!="\r") {
-					currentValue+=chunk[i];
+		// Looping throught chunk chars
+		for(var i=0, j=chunk.length; i<j; i++) {
+			// detect escaped chars
+			if(chunk[i]===CHR_ESC
+				&&(
+					this.state===PARSE_RVAL
+					||this.state===PARSE_SILENT
+					||this.state===PARSE_MLSTRING
+					)
+				) {
+				if(this.escaped) {
+					this.escaped=false;
 				} else {
-					break;
+					this.escaped=true;
+					continue;
 				}
 			}
-			if(this.debug) {
-				log+='- Merging : '+currentValue+'.'+"\n";
-			}
-			this.currentVar[this.multilineValue]+=currentValue;
-			if(i<x-1) {
-				this.multilineValue=false;
-			}
-			if(this.debug) {
-				console.log(log);
-			}
-		}
-		for(i,x; i<x; i++) {
-			// Checking for comment or empty/malformed line
-			if(chunk[i]=='#'||chunk[i]=="&"||chunk[i]=="=") {
-				if(this.debug) {
-					console.log('Line '+line+' - Found a comment/malformed line (char:'+chunk[i]+').'+"\n");
-					log='';
-				}
-				while(i<x&&chunk[i]!="\n"&&chunk[i]!="\r") {
-					if(this.debug) {
-						log+=chunk[i];
+			// parsing chars according to the current state
+			switch(this.state) {
+				// Continue while newlines
+				case PARSE_NEWLINE:
+					this.escaped=false;
+					this.operator='';
+					this.leftValue='';
+					this.rightValue='';
+					if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
+						continue;
 					}
-					i++;
-				}
-				if(this.debug) {
-					console.log('- Comment : '+log+'.'+"\n");
-				}
-				i++;
-				line++;
-				continue;
-			} else if(chunk[i]=="\n"||chunk[i]=="\r") {
-				if(this.debug) {
-					console.log('Line '+line+' - Found an empty line.'+"\n");
-				}
-				line++;
-				continue;
-			}
-			// Beginning new line scan
-			if(this.debug) {
-				console.log('Line '+line+' - Scanning a new line'+"\n"+'-> Left side'+"\n");
-				var log='';
-			}
-			this.currentVar=this.rootScope;
-			currentLeftNode='';
-			parentLeftNode='';
-			// Scanning left side
-			if(chunk[i]=='"') {
-				if(this.debug) {
-					log+='- New scope back reference';
-				}
-				if(chunk[i+1]=='.') {
-					if(this.debug) {
-						log+=' (immediat)';
+				// Read left value content
+				case PARSE_LVAL:
+					// Detect comments
+					if(chunk[i]===CHR_COM) {
+						this.state=PARSE_COMMENT;
+						continue;
 					}
-					if(this.currentScopes.length) {
-						this.currentVar=this.currentScopes[this.currentScopes.length-1];
-					} else if(this.debug) {
-						log+=' (unavailable)';
+					// Detect special operators
+					if(-1!==EQ_OPS.indexOf(chunk[i])) {
+						this.state=PARSE_OPERATOR;
+						this.operator=chunk[i];
+						continue;
 					}
-					i=i+2;
-				} else if(chunk[i+1]=='-') {
-					if(this.debug) {
-						log+=' (-'+parseInt(chunk[i+2])+')';
+					// Detect the = operator
+					if(CHR_EQ===chunk[i]) {
+						this.state=PARSE_RVAL;
+						this.operator=chunk[i];
+						continue;
 					}
-					if(this.currentScopes.length>parseInt(chunk[i+2])) {
-						for(var j=parseInt(chunk[i+2])+1; j>0; j--) {
-							this.currentVar=this.currentScopes.pop();
+					// Fail if a new line is found
+					if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
+						if(this.stricMode) {
+							throw Error('Unexpected new line found while parsing '
+							+' a leftValue.');
 						}
-						i=i+4;
-						this.currentScopes.push(this.currentVar);
-					} else {
-						if(this.debug) {
-							log+=' (unavailable)';
+						this.state=PARSE_NEWLINE;
+						continue;
+					}
+					// Store LVAL chars
+					this.leftValue+=chunk[i];
+					continue;
+				// Read right value content
+				case PARSE_RVAL:
+					// Left value should not be empty
+					if(''===this.leftValue) {
+						if(this.stricMode) {
+							throw Error('Found an empty leftValue.');
 						}
-						while(i<x&&chunk[i]!="\n"&&chunk[i]!="\r") {
-							if(this.debug)
-								log+=chunk[i];
-							i++;
+						this.state=PARSE_SILENT;
+					}
+					// Stop if a new line is found
+					if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
+						// rightValue can be empty only with the = operator
+						if(this.operator!=CHR_EQ&&''===this.rightValue) {
+							if(this.stricMode) {
+								throw Error('Found an empty rightValue.');
+							}
+							this.state=PARSE_NEWLINE;
+							continue;
+						}
+						// Compute rvals if it's a ref
+						if(this.operator===CHR_REF) {
+							this.rightValue='ref to the object';
+						}
+						// Compute lval
+						
+						// set rval in lval (with operators)
+						
+						// if the newline was escaped, continue to read the string
+						if(this.escaped) {
+							this.state=PARSE_MLSTRING;
+							this.escaped=false;
+						} else {
+							this.state=PARSE_NEWLINE;
 						}
 						continue;
 					}
-				}
-				if(this.debug) {
-					log+="\n";
-				}
-			} else {
-				this.currentScopes=new Array();
-			}
-			for(i; i<x; i++) {
-				if(chunk[i]!='.'&&chunk[i]!='='&&chunk[i]!='&'&&chunk[i]!="\n"&&chunk[i]!="\r") {
-					currentLeftNode+=chunk[i];
-				} else {
-					if(this.debug) {
-						log+='- New node: '+currentLeftNode+"\n";
+					// Store RVAL chars
+					this.rightValue+=chunk[i];
+					continue;
+				// Parse the content of a multiline value
+				case PARSE_MLSTRING:
+				// Finding the = char after an operator
+				case PARSE_OPERATOR:
+					if(chunk[i]===CHR_EQ) {
+						this.state=PARSE_RVAL;
+						continue;
 					}
-					if(currentLeftNode==='') {
-						// Malformed node name
-						if(this.debug)
-							log+='- Bad node name'+"\n";
-						break;
-					} else if(currentLeftNode=='!') {
-						if(this.currentVar instanceof Array) {
-							this.currentVar.length=0;
-						}
-						//else if(this.currentVar instanceof Object)
-						//	for (prop in this.currentVar) { if (this.currentVar.hasOwnProperty(prop)) { delete this.currentVar[prop]; } }
-						currentLeftNode=0;
-						if(this.debug) {
-							log+='- Resetting the array and creating a new entry, change node name from * to '+currentLeftNode+'.'+"\n";
-						}
-					}	else if(currentLeftNode=='+') {
-						currentLeftNode=(this.currentVar instanceof Array?this.currentVar.length:0);
-						if(this.debug) {
-							log+='- Creating a new array entry, change node name from + to '+currentLeftNode+'.'+"\n";
-						}
-					} else if(currentLeftNode=='*') {
-						currentLeftNode=(this.currentVar instanceof Array?this.currentVar.length-1:0);
-						if(this.debug) {
-							log+='- Working on the last array element, change node name from * to '+currentLeftNode+'.'+"\n";
-						}
+					if(this.stricMode) {
+						throw Error('Unexpected char after the "'+this.operator+'"'+
+						' operator. Expected =, found '+chunk[i]+'.');
 					}
-					if(chunk[i]=='='||chunk[i]=='&') {
-						break;
-					}
-					if(chunk[i]=="\n"||chunk[i]=="\r") {
-						i++; break;
-					}
-					if(/^([0-9]+)$/.test(''+currentLeftNode)&&!(this.currentVar instanceof Array)) {
-						if(parentLeftNode) {
-							//this.currentVar=this.currentScopes[this.currentScopes.length-2][parentLeftNode]=new Array();
-							this.currentVar=(this.currentScopes.length>1?this.currentScopes[this.currentScopes.length-2]:this.rootScope)[parentLeftNode]=new Array();
-							if(this.debug) {
-								log+='- Parent node was not an array.'+"\n";
-							}
-						} else if(this.debug) {
-							log+='- Parent node was not an array but is the root scope.'+"\n";
-						}
-					}
-					if(!(this.currentVar[currentLeftNode] instanceof Object)) {
-						this.currentVar[currentLeftNode]=new Object();
-					}
-					this.currentVar=this.currentVar[currentLeftNode];
-					this.currentScopes.push(this.currentVar);
-					if(this.debug) {
-						log+='- Final node name is '+currentLeftNode+'.'+"\n";
-					}
-					parentLeftNode=currentLeftNode;
-					currentLeftNode='';
-				}
-			}
-			if(this.debug) {
-				console.log(log+"\n");
-				console.log('-> Right side'+"\n");
-				log='';
-			}
-			if(currentLeftNode!=='') {
-				// Scanning right side
-				this.currentRightScopes=new Array();
-				if(i<x&&chunk[i]=='&'&&chunk[i+1]=='=') {
-					// Getting linked var
-					currentRightVar=this.rootScope;
-					currentRightNode='';
-					parentRightNode='';
-					if(this.debug) {
-						log+='- Right side is a linked var'+"\n";
-					}
-					for(i=i+2; i<x; i++) {
-						if(i<x-1&&chunk[i]!='.'&&chunk[i]!='='&&chunk[i]!='&'&&chunk[i]!="\n"&&chunk[i]!="\r") {
-							currentRightNode+=chunk[i];
-						} else {
-							if(i==x-1&&chunk[i]!='.'&&chunk[i]!='='&&chunk[i]!='&'&&chunk[i]!="\n"&&chunk[i]!="\r") {
-								currentRightNode+=chunk[i];
-								i++;
-							}
-							if(this.debug) {
-								log+='- New node: '+currentRightNode+'.'+"\n";
-							}
-							if(currentRightNode==='') {
-								// Malformed node name
-								if(this.debug) {
-									log+='- Bad node name'+"\n";
-								}
-								break;
-							} else if(currentRightNode=='!') {
-								if(currentRightVar instanceof Array) {
-									currentRightVar.length=0;
-								}
-								//else if(this.currentVar instanceof Object)
-								//	for (prop in currentRightVar) { if (currentRightVar.hasOwnProperty(prop)) { delete currentRightVar[prop]; } }
-								currentRightNode=0;
-								if(this.debug)
-									log+='- Resetting the array and creating a new entry, change node name from * to '+currentRightNode+'.'+"\n";
-							} else if(currentRightNode=='+') {
-								currentRightNode=(currentRightVar instanceof Array?currentRightVar.length:0);
-								if(this.debug) {
-									log+='- Creating a new array entry, change node name from + to '+currentRightNode+'.'+"\n";
-								}
-							} else if(currentRightNode=='*') {
-								currentRightNode=(currentRightVar instanceof Array?currentRightVar.length-1:0);
-								if(this.debug) {
-									log+='- Working on the last array element, change node name from * to '+currentRightNode+'.'+"\n";
-								}
-							}
-							if(i==x||chunk[i]=='='||chunk[i]=='&'||chunk[i]=="\n"||chunk[i]=="\r") {
-								if(this.debug) {
-									log+='- No more node.'+"\n";
-								}
-								if(chunk[i]=="\n"||chunk[i]=="\r") {
-									i++;
-								}
-								break;
-							}
-							if(/^([0-9]+)$/.test(''+currentRightNode)&&!(currentRightVar instanceof Array)) {
-								if(parentRightNode) {
-									currentRightVar=this.currentRightScopes[this.currentRightScopes.length-2][parentRightNode]=new Array();
-									if(this.debug) {
-										log+='- Parent node was not an array.'+"\n";
-									}
-								} else if(this.debug) {
-									log+='- Parent node was not an array but is the root scope.'+"\n";
-								}
-							}
-							if(!(currentRightVar[currentRightNode] instanceof Object)) {
-								if(this.debug) {
-									log+='- Nothing set for the current node, creating an array'+"\n";
-								}
-								currentRightVar[currentRightNode]=new Object();
-							}
-							currentRightVar=currentRightVar[currentRightNode];
-							this.currentRightScopes.push(currentRightVar);
-							currentRightNode='';
-						}
-					}
-					if(currentRightNode) {
-						if(this.debug) {
-							log+='- Last node names : '+currentLeftNode+' (left) '+currentRightNode+' (right).'+"\n";
-						}
-						this.currentVar[currentLeftNode]=currentRightVar[currentRightNode];
-					}
-				} else if(i<x&&chunk[i]=='=') {
-					// Getting var value
-					if(this.debug) {
-						log+='- Valued var'+"\n";
-					}
-					currentValue='';
-					for(i=i+1; i<x; i++) {
-						if(chunk[i]=='\\'&&(chunk[i+1]=="\n"||chunk[i+1]=="\r"||i==x-1)) {
-							if(this.debug) {
-								log+='- Value continues on the next line.'+"\n";
-							}
-							currentValue+="\n";
-							i=i+2;
-							if(i>=x-1) {
-								if(this.debug) {
-									log+='- Value continues on the next line but the chunk ends.'+"\n";
-								}
-								this.multilineValue=currentLeftNode;
-							}
-						} else if(chunk[i]!="\n"&&chunk[i]!="\r") {
-							currentValue+=chunk[i];
-						} else {
-							i++; break;
-						}
-					}
-					if(this.debug) {
-						log+='- Var value: '+currentValue+'.'+"\n";
-					}
-					if(currentValue==='false'||currentValue==='null') {
-						this.currentVar[currentLeftNode]=false;
-					} else if(currentValue==='true') {
-						this.currentVar[currentLeftNode]=true;
+					if(chunk[i]===CHR_EQ||chunk[i]===CHR_CR) {
+						this.state=PARSE_NEWLINE;
 					} else {
-						this.currentVar[currentLeftNode]=currentValue;
+						this.state=PARSE_SILENT;
 					}
-				}
-			} else if(this.debug) {
-				log+='- Right side is empty'+"\n";
+					continue;
+				// Parsing a comment content
+				case PARSE_COMMENT:
+					if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
+						this.state=PARSE_NEWLINE;
+					}
+					continue;
+				// Something was wrong, waiting for a newline to continue parsing
+				case PARSE_SILENT:
+					if(true!==this.escaped&&chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
+						this.state=PARSE_NEWLINE;
+					}
+					this.escaped=false;
+					continue;
 			}
-			if(this.debug) {
-				console.log(log+"\n");
-			}
-			line ++;
 		}
 	};
 
