@@ -67,6 +67,10 @@
 		, PARSE_MLSTRING = 5
 		, PARSE_COMMENT = 6
 		, PARSE_SILENT = 7
+		// Escape status
+		, ESC_NONE = 0
+		, ESC_LF = 1
+		, ESC_ALL = 3
 		;
 
 	VarStreamReader.prototype.resolveScope = function (val) {
@@ -169,9 +173,9 @@
 					)
 				) {
 				if(this.escaped) {
-					this.escaped=false;
+					this.escaped=ESC_NONE;
 				} else {
-					this.escaped=true;
+					this.escaped=ESC_ALL;
 					continue;
 				}
 			}
@@ -179,7 +183,7 @@
 			switch(this.state) {
 				// Continue while newlines
 				case PARSE_NEWLINE:
-					this.escaped=false;
+					this.escaped=ESC_NONE;
 					this.operator='';
 					this.leftValue='';
 					this.rightValue='';
@@ -286,7 +290,11 @@
 						this.currentVar=this.rightValue;
 						// if the newline was escaped, continue to read the string
 						if(this.escaped) {
-							this.escaped=false;
+							if(chunk[i]===CHR_CR) {
+								this.escaped=ESC_LF;
+							} else {
+								this.escaped=ESC_NONE;
+							}
 							this.state=PARSE_MLSTRING;
 							this.leftValue.root[this.leftValue.prop]+=chunk[i];
 						} else {
@@ -299,14 +307,18 @@
 					continue;
 				// Parse the content of a multiline value
 				case PARSE_MLSTRING:
-					if((!this.escaped)&&(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR)) {
+					if((chunk[i]===CHR_ENDL&&!(this.escaped&ESC_LF))
+						||(chunk[i]===CHR_CR&&!(this.escaped&ESC_ALL))) {
 						this.state=PARSE_NEWLINE;
-					} else {
-						if(this.escaped) {
-							this.escaped=false;
-						}
-						this.leftValue.root[this.leftValue.prop]+=chunk[i];
+						continue;
 					}
+					if(chunk[i]===CHR_CR&&(this.escaped&ESC_ALL)) {
+						this.escaped=ESC_LF;
+					}
+					if(chunk[i]===CHR_ENDL&&(this.escaped&ESC_LF)) {
+						this.escaped=ESC_NONE;
+					}
+					this.leftValue.root[this.leftValue.prop]+=chunk[i];
 					continue;
 				// Finding the = char after an operator
 				case PARSE_OPERATOR:
@@ -326,16 +338,31 @@
 					continue;
 				// Parsing a comment content
 				case PARSE_COMMENT:
-					if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
+					if((chunk[i]===CHR_ENDL&&!(this.escaped&ESC_LF))
+						||(chunk[i]===CHR_CR&&!(this.escaped&ESC_ALL))) {
 						this.state=PARSE_NEWLINE;
+						continue;
+					}
+					if(chunk[i]===CHR_CR&&(this.escaped&ESC_ALL)) {
+						this.escaped=ESC_LF;
+					}
+					if(chunk[i]===CHR_ENDL&&(this.escaped&ESC_LF)) {
+						this.escaped=ESC_NONE;
 					}
 					continue;
 				// Something was wrong, waiting for a newline to continue parsing
 				case PARSE_SILENT:
-					if(true!==this.escaped&&chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
+					if((chunk[i]===CHR_ENDL&&!(this.escaped&ESC_LF))
+						||(chunk[i]===CHR_CR&&!(this.escaped&ESC_ALL))) {
 						this.state=PARSE_NEWLINE;
+						continue;
 					}
-					this.escaped=false;
+					if(chunk[i]===CHR_CR&&(this.escaped&ESC_ALL)) {
+						this.escaped=ESC_LF;
+					}
+					if(chunk[i]===CHR_ENDL&&(this.escaped&ESC_LF)) {
+						this.escaped=ESC_NONE;
+					}
 					continue;
 			}
 		}
