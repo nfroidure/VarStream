@@ -233,7 +233,8 @@
 					// Stop if a new line is found
 					if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
 						// rightValue can be empty only with the = operator
-						if(this.operator!=CHR_EQ&&''===this.rightValue) {
+						// or if the strin is multiline
+						if(this.operator!=CHR_EQ&&''===this.rightValue&&this.escaped===ESC_NONE) {
 							if(this.strictMode) {
 								throw Error('Found an empty rightValue.');
 							}
