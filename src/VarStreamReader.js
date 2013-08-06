@@ -72,9 +72,6 @@
 		;
 
 	VarStreamReader.prototype.resolveScope = function (val) {
-		if(typeof val !== 'string') {
-			console.log('bug',typeof val, val)
-		}
 		var nodes=val.split(CHR_SEP), scope=this.rootScope, n;
 		// Looking for backward refs in the first node
 		if(nodes[0]&&nodes[0][0]==CHR_BCK) {
@@ -89,13 +86,13 @@
 					nodes.shift();
 				}
 			}
-			// if no numbers adding every previous nodes
+			// if no numbers adding every previous nodes except the prop
 			if(nodes[0]==CHR_BCK) {
-				n=this.previousNodes.length-1;
+				n=this.previousNodes.length-2;
 			// if numbers
 			} else {
 				// check it
-				if(BCK_CHARS.test(nodes[0])) {
+				if(!BCK_CHARS.test(nodes[0])) {
 					if(this.strictMode) {
 						throw Error('Malformed backward reference.');
 					}
@@ -111,6 +108,7 @@
 				return null;
 			}
 			this.previousNodes.length=n+1;
+			nodes.shift();
 			nodes.unshift.apply(nodes,this.previousNodes);
 		}
 		// Looping throught each nodes
@@ -123,7 +121,7 @@
 				return null;
 			}
 			// Array operators
-			if(ARRAY_OPS.indexOf(nodes[i])||ARRAY_NODE_CHARS.test(nodes[i])) {
+			if(-1!==ARRAY_OPS.indexOf(nodes[i])||ARRAY_NODE_CHARS.test(nodes[i])) {
 				// Ensure the scope is an array
 				if('undefined'=== typeof scope.root[scope.prop]
 					||!(scope.root[scope.prop] instanceof Array)) {
