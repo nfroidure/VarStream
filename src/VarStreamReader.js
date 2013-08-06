@@ -80,7 +80,7 @@
 				if(this.strictMode) {
 					throw Error('Backward reference given while no previous nodes.');
 				}
-				if(1===nodes.length||1===nodes[i].length) {
+				if(1===nodes.length||1===nodes[0].length) {
 					return null;
 				} else {
 					nodes.shift();
