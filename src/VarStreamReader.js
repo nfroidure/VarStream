@@ -116,7 +116,7 @@
 			// Checking if the node is not empty
 			if(''===nodes[i]) {
 				if(this.strictMode) {
-					throw Error('The leftValue can\'t have empty nodes.');
+					throw Error('The leftValue can\'t have empty nodes ('+val+').');
 				}
 				return null;
 			}
@@ -197,7 +197,8 @@
 						continue;
 					}
 					// Detect special operators
-					if(-1!==EQ_OPS.indexOf(chunk[i])) {
+					if(this.leftValue.lastIndexOf(CHR_SEP)!=this.leftValue.length-1
+						&&-1!==EQ_OPS.indexOf(chunk[i])) {
 						this.state=PARSE_OPERATOR;
 						this.operator=chunk[i];
 						continue;

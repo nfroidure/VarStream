@@ -100,7 +100,6 @@ describe('Reading a varstream', function() {
 	it("should take backward references in count", function(done) {
 		fs.createReadStream(__dirname+'/fixtures/4-backward.dat').pipe(myVarStream) 
 		.once('end', function () {
-				console.log(JSON.stringify(scope));
 				assert.equal(typeof scope.vars.treeRoot.branch1,'object');
 				assert.strictEqual(scope.vars.treeRoot.branch1.aSimpleIntValue,2000);
 				assert.strictEqual(scope.vars.treeRoot.branch1.aSimpleIntNegativeValue,-2000);
@@ -149,7 +148,7 @@ describe('Reading a varstream', function() {
 				assert.equal(scope.vars.aSimpleStringValue,"I'm the king of the world! Yep!");
 				assert.equal(typeof scope.vars.aSimpleStringMultilineValue, 'string');
 				assert.equal(scope.vars.aSimpleStringMultilineValue,
-					"I'm the king of the world!\nYou know!\nIt's true.\nYep.");
+					"I'm the king of the world!\nYou know!\nIt's true.\r\nYep.");
 				/*assert.equal(typeof scope.vars.aSimpleWellDeclaredStringValue, 'string');
 				assert.equal(scope.vars.aSimpleWellDeclaredStringValue,
 					"I'm the king of the world! Yep!");
@@ -167,32 +166,32 @@ describe('Reading a varstream', function() {
 		fs.createReadStream(__dirname+'/fixtures/6-arrays.dat').pipe(myVarStream) 
 		.once('end', function () {
 				// First array
-				assert.equal(typeof scope.vars.simpleArray,'object');
-				assert.equal(scope.vars.simpleArray instanceof Array,true);
-				assert.equal(scope.vars.simpleArray.length,9);
-				assert.equal(scope.vars.simpleArray[0],0);
-				assert.equal(scope.vars.simpleArray[1],1);
-				assert.equal(scope.vars.simpleArray[2],2);
-				assert.equal(scope.vars.simpleArray[3],3);
-				assert.equal(scope.vars.simpleArray[4],4);
-				assert.equal(scope.vars.simpleArray[5],5);
-				assert.equal(scope.vars.simpleArray[6],6);
-				assert.equal(scope.vars.simpleArray[7],9);
-				assert.equal(scope.vars.simpleArray[8],8);
+				assert.equal(typeof scope.vars.aSimpleArray,'object');
+				assert.equal(scope.vars.aSimpleArray instanceof Array,true);
+				assert.equal(scope.vars.aSimpleArray.length,9);
+				assert.equal(scope.vars.aSimpleArray[0],0);
+				assert.equal(scope.vars.aSimpleArray[1],1);
+				assert.equal(scope.vars.aSimpleArray[2],2);
+				assert.equal(scope.vars.aSimpleArray[3],3);
+				assert.equal(scope.vars.aSimpleArray[4],4);
+				assert.equal(scope.vars.aSimpleArray[5],5);
+				assert.equal(scope.vars.aSimpleArray[6],6);
+				assert.equal(scope.vars.aSimpleArray[7],9);
+				assert.equal(scope.vars.aSimpleArray[8],8);
 				// Second array
-				assert.equal(typeof scope.vars.simpleArray2,'object');
-				assert.equal(scope.vars.simpleArray2 instanceof Array,true);
-				assert.equal(scope.vars.simpleArray2.length,10);
-				assert.equal(scope.vars.simpleArray[0],5);
-				assert.equal(scope.vars.simpleArray[1],4);
-				assert.equal(typeof scope.vars.simpleArray[2],'undefined');
-				assert.equal(typeof scope.vars.simpleArray[3],'undefined');
-				assert.equal(typeof scope.vars.simpleArray[4],'undefined');
-				assert.equal(typeof scope.vars.simpleArray[5],'undefined');
-				assert.equal(typeof scope.vars.simpleArray[6],'undefined');
-				assert.equal(typeof scope.vars.simpleArray[7],'undefined');
-				assert.equal(typeof scope.vars.simpleArray[8],'undefined');
-				assert.equal(scope.vars.simpleArray[9],5);
+				assert.equal(typeof scope.vars.aSimpleArray2,'object');
+				assert.equal(scope.vars.aSimpleArray2 instanceof Array,true);
+				assert.equal(scope.vars.aSimpleArray2.length,10);
+				assert.equal(scope.vars.aSimpleArray2[0].value,5);
+				assert.equal(scope.vars.aSimpleArray2[1].value,4);
+				assert.equal(typeof scope.vars.aSimpleArray2[2],'undefined');
+				assert.equal(typeof scope.vars.aSimpleArray2[3],'undefined');
+				assert.equal(typeof scope.vars.aSimpleArray2[4],'undefined');
+				assert.equal(typeof scope.vars.aSimpleArray2[5],'undefined');
+				assert.equal(typeof scope.vars.aSimpleArray2[6],'undefined');
+				assert.equal(typeof scope.vars.aSimpleArray2[7],'undefined');
+				assert.equal(typeof scope.vars.aSimpleArray2[8],'undefined');
+				assert.equal(scope.vars.aSimpleArray2[9].value,5);
 			done();
 		});
 	});
