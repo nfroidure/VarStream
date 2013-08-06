@@ -1,20 +1,22 @@
 VarStream - v2
 ============
 
-WARNING : This VarStream version is currently under development !
+*WARNING:* This VarStream version is currently under development ! Use it at your own risk !
 
 VarStream is a variable exchange format designed to replace JSON for situations when it reaches its limits. VarStream has many advantages :
 - Human readable/writeable : no need to be a programmer to create VarStream datas.
 - Streamable : No need to wait the datas to be fully loaded to populate/access your program variables (usefull for web sockets realtime var loading and ui reactivity...).
 - Self referencable : you can refer to another variable of the stream in the stream itself, wich is not possible with JSON.
-- Mergeable : you easily merge multiple varstreams with no loss (usefull for configuration files and localization files merging...).
-- Lighter most of the time : Due to it's smart optimizations (self reference, backward reference) :
+- Mergeable : you easily merge multiple varstreams with no loss (usefull for configuration files and localization files...).
+- Lighter most of the time : Due to it's smart optimizations (self reference, backward reference, array operators) :
 - - test1 : linear.dat [390 bytes] vs linear.json [423 bytes] => 8% smaller
 - - test2 : arrays.dat [1244 bytes] vs arrays.json [1178 bytes] => 6% bigger
 - - test3 : references.dat [2844 bytes] vs references.json [3314 bytes] => 16% smaller
 - Save memory : the garbage collector can cleanup memory before the parse ends, references prevent data duplication.
 - Comments friendly : Keeps your configuration/localization files readable.
 - Circular references friendly : transmit your data trees with no hacks.
+
+VarStream can be used with NodeJS and on the browser side. I haven't test it yet on old browsers but it's on my todo list.
 
 VarStream program is free to use for any purpose (GNU/GPL), VarStream format is royalty free, i pushed it in the public domain. French speaking developpers can get a introduction to VarStreams here : http://www.insertafter.com/articles-remplacer_json_par_varstream.html . English version will come soon.
 
@@ -29,7 +31,7 @@ How to use
 -------------
 
 NodeJs :
-<pre>
+```js
 var VarStream = require('varstream');
 var fs = require('fs');
 
@@ -37,13 +39,12 @@ var scope = {}; // The scope in wich i want vars to be loaded
 var myVarStream=new VarStream(scope, true);
 fs.createReadStream('test.dat').pipe(myVarStream) // Reading var stream from a ReadStream
   .on('end', function () {
-	console.log(scope);
 	myVarStream.pipe(fs.createWriteStream('test2.dat')); // Piping VarStream to a WriteStream
 	});
-</pre>
+```
 
 Browser :
-<pre>
+```js
 var myScope={};
 var myStreamReader=new VarStreamReader(myScope,true); // May use XHR to load VarStreams
 myStreamReader.read(''); // Reading empty chunk
@@ -53,14 +54,34 @@ myStreamReader.read('# Database'
  +'database.hosts.+.domain=mysql1.example.com'+"\n"
  +'database.hosts.*.master=true'+"\n"
  +'database.hosts.+.domain=mysql2.example.com'+"\n"
- +'".master=false'+"\n"
+ +'^.master=false'+"\n"
  +'database.hosts.+&=database.hosts.0'+"\n"
  +'database.hosts.+.domain&=database.hosts.*.domain'+"\n"); // A more complicated chunk
 console.log(myScope.database.hosts[0].domain); // prints mysql1.example.com
 console.log(myScope.database.hosts[1].domain); // prints mysql2.example.com
 console.log(myScope.database.hosts[2].domain); // prints mysql1.example.com
 console.log(myScope.database.hosts[3].domain); // prints mysql2.example.com
-</pre>
+```
+
+CLI Usage
+-------------
+VarStream comes with 2 CLI utilities, to use them, install VarStream globally :
+```sh
+npm install -g varstream
+# Convert JSON datas to VarStream
+json2varstream path/to/input.json path/to/ouput.dat
+# Convert VarStreams datas to JSON
+varstream2json path/to/input.dat path/to/ouput.json
+```
+
+Contributing/Testing
+-------------
+The VarStream JavaScript library is fully tested. If you wish to give a contribution to the current codebase, feel free to.
+
+To test your code before submitting, just run the following command with NodeJS installed :
+```js
+npm test
+```
 
 Contributors
 -------------

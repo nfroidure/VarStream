@@ -31,4 +31,9 @@
 		"configuration"
 	],
 	"main": "./src/VarStream"
+	"preferGlobal": "true",
+	"bin": {
+		"varstream2json" : "cli/varstream2json.js",
+		"json2varstream" : "cli/json2varstream.js"
 	}
+}

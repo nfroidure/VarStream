@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 var VarStream = require('../src/VarStream'),
 	fs = require('fs');
 
