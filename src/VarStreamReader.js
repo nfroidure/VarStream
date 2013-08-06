@@ -241,6 +241,9 @@
 						// if it's a ref
 						if(this.operator===CHR_REF) {
 							this.rightValue=this.resolveScope(this.rightValue);
+						// null
+						} else if('null'===this.rightValue) {
+							this.rightValue=null;
 						// Booleans
 						} else if('true'===this.rightValue) {
 							this.rightValue=true;
