@@ -64,6 +64,6 @@ VarStream.prototype.destroy = function() {
 };
 
 // Exporting
-VarStream.prototype.VarStreamReader=VarStreamReader;
-VarStream.prototype.VarStreamWriter=VarStreamWriter;
+VarStream.VarStreamReader=VarStreamReader;
+VarStream.VarStreamWriter=VarStreamWriter;
 module.exports = VarStream;

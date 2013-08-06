@@ -30,7 +30,7 @@
 		"localization",
 		"configuration"
 	],
-	"main": "./src/VarStream"
+	"main": "./src/VarStream",
 	"preferGlobal": "true",
 	"bin": {
 		"varstream2json" : "cli/varstream2json.js",
