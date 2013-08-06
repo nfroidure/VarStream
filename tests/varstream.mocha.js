@@ -287,182 +287,251 @@ describe('Reading chunked varstreams', function() {
 
 describe('Reading bad varstreams', function() {
 
-	it("should raise exceptions when", function() {
+	describe("should raise exceptions when", function() {
 
-		it("a line ends with no =", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("a line ends with no =", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimpleVar\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='Unexpected new line found while parsing '
+							+' a leftValue.') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("a line ends with no =", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("a line ends with no value after &=", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimpleVar&=\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='Found an empty rightValue.') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("a line ends with no value after &=", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("a line ends with no value after +=", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimpleVar+=\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='Found an empty rightValue.') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("a line ends with no value after &=", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar&=\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("a line ends with no value after -=", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimpleVar-=\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='Found an empty rightValue.') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("a line ends with no value after +=", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar+=\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("a line ends with no value after *=", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimpleVar*=\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='Found an empty rightValue.') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("a line ends with no value after -=", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar-=\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("a line ends with no value after /=", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimpleVar/=\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='Found an empty rightValue.') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("a line ends with no value after *=", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar*=\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("there are a empty node at start", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('.ASimpleVar=true\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='The leftValue can\'t have empty nodes'
+						+' (.ASimpleVar).') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("a line ends with no value after /=", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar/=\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("there are a empty node at start", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimpleVar.prop..prop.prop=true\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='The leftValue can\'t have empty nodes'
+						+' (ASimpleVar.prop..prop.prop).') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("there are a empty node at start", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('.ASimpleVar=true\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("there are a empty node at end", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimpleVar.=false\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='The leftValue can\'t have empty nodes (ASimpleVar.).') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("there are a empty node at start", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar.prop..prop.prop=true\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("there are malformed nodes", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimp-+leVar.ds+d=false\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='Unexpected char after the "-" operator. Expected =,'
+						+' found +.') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("there are a empty node at end", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar.=false\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("there are malformed nodes", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimpleVar.ds$d=false\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='Illegal chars found in a the node "ds$d".') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("there are malformed nodes", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimp-+leVar.ds+d=false\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("there are backward reference on an empty scope", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('^.test=true\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='Backward reference given while no previous nodes.') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("there are backward reference on an empty scope", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('^.test=true\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("there are out of range backward reference", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimpleVar.prop1.prop2=false\n^4.test=true\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='Backward reference index is greater than the'
+						+' previous node max index.') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("there are out of range backward reference", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar.prop1.prop2=false\n^4.test=true\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("there are malformed backward reference", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimpleVar.prop1.prop2=false\n^4b.test=true\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='Malformed backward reference.') {
+						return true;
+					}
+				}
+			);
 		});
 
-		it("there are malformed backward reference", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar.prop1.prop2=false\n^4b.test=true\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
-		});
-
-		it("there are malformed backward reference2", function(done) {
-			try {
-				var scope = {};
-				var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
-				myVarStream.read('ASimpleVar.prop1.prop2=false\n^b5.test=true\n');
-				myVarStream.end();
-			} catch(e) {
-				done();
-			}
+		it("there are malformed backward reference2", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			assert.throws(
+				function() {
+					myVarStream.read('ASimpleVar.prop1.prop2=false\n^b5.test=true\n');
+				},
+				function(err) {
+				if(err instanceof Error
+					&&err.message==='Malformed backward reference.') {
+						return true;
+					}
+				}
+			);
 		});
 
 	});
