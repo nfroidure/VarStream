@@ -19,13 +19,13 @@
 // START: Module logic start
 
 	// Constructor
-	function VarStreamReader (scope,strictMode) {
+	function VarStreamReader (scope, prop, strictMode) {
 		// Keep a ref to the root scope
-		this.rootScope=scope;
+		this.rootScope={scope:scope,prop:prop};
 		// Save the strictMode param
 		this.strictMode=(strictMode?strictMode:false);
 		// Store current scopes for backward references
-		this.currentScopes=new Array();
+		this.previousNodes=new Array();
 		// The current readed var
 		this.currentVar=new Array();
 		// The parse state
@@ -56,7 +56,9 @@
 		// Chars sets
 		, EQ_OPS = [CHR_PLU,CHR_MIN,CHR_MUL,CHR_DIV,CHR_MOD,CHR_REF]
 		, ARRAY_OPS = [CHR_PLU,CHR_MUL,CHR_NEW]
-		, NODE_CHARS = /^[a-zA-Z0-9\^\.]$/
+		, ARRAY_NODE_CHARS = /^[0-9]+$/
+		, PROP_NODE_CHARS = /^[a-zA-Z0-9]+$/
+		, BCK_CHARS = /^\^[0-9]*$/
 		// Parsing status
 		, PARSE_NEWLINE = 1
 		, PARSE_LVAL = 2
@@ -66,6 +68,103 @@
 		, PARSE_COMMENT = 6
 		, PARSE_SILENT = 7
 		;
+
+	VarStreamReader.prototype.resolveScope = function (nodes) {
+		var scope=this.rootScope;
+		for(var i=0, j=nodes.length; i<j; i++) {
+
+		}
+		return scope;
+	};
+
+	VarStreamReader.prototype.resolveScope = function (val) {
+		var nodes=val.split(CHR_SEP), scope=this.rootScope, n;
+		// Looking for backward refs in the first node
+		if(nodes[0]&&nodes[0][0]==CHR_BCK) {
+			// if no previous nodes
+			if(0===this.previousNodes.length) {
+				if(this.strictMode) {
+					throw Error('Backward reference given while no previous nodes.');
+				}
+				if(1===nodes.length||1===nodes[i].length) {
+					return null;
+				} else {
+					nodes.shift();
+					continue;
+				}
+			}
+			// if no numbers adding every previous nodes
+			if(nodes[0]==CHR_BCK) {
+				n=this.previousNodes.length-1;
+			// if numbers
+			} else {
+				// check it
+				if(BCK_CHARS.test(nodes[0])) {
+					if(this.strictMode) {
+						throw Error('Malformed backward reference.');
+					}
+					return null;
+				}
+				var n=parseInt(nodes[0].substring(1),10);
+			}
+			if(n>this.previousNodes.length) {
+				if(this.strictMode) {
+					throw Error('Backward reference index is greater than the previous'
+						+' node max index.');
+				}
+				return null;
+			}
+			this.previousNodes.length=n+1;
+			nodes.unshift.apply(nodes,this.previousNodes);
+		}
+		// Looping throught each nodes
+		for(var i=0, j=nodes.length; i<j; i++) {
+			// Checking if the node is not empty
+			if(''===nodes[i]) {
+				if(this.strictMode) {
+					throw Error('The leftValue can\'t have empty nodes.');
+				}
+				return null;
+			}
+			// Array operators
+			if(ARRAY_OPS.indexOf(nodes[i])||ARRAY_NODE_CHARS.test(nodes[i])) {
+				// Ensure the scope is an array
+				if('undefined'=== typeof scope.root[scope.prop]
+					||!(scope.root[scope.prop] instanceof Array)) {
+						scope.root[scope.prop]=new Array();
+				}
+				if(nodes[i]===CHR_PLU) {
+						nodes[i]=scope.root[scope.prop].length;
+				}
+				if(nodes[i]===CHR_MUL) {
+					nodes[i]=scope.root[scope.prop].length-1;
+				}
+				if(nodes[i]===CHR_NEW) {
+					nodes[i]=scope.root[scope.prop].length=0;
+				}
+			} else {
+				// Checking node chars
+				if(!PROP_NODE_CHARS.test(nodes[i])) {
+					if(this.strictMode) {
+						throw Error('Illegal chars found in a the node "'+nodes[i]+'".');
+					}
+					return null;
+				}
+				// Ensure the scope is an object
+				if('undefined'=== typeof scope.root[scope.prop]
+					||!(scope.root[scope.prop] instanceof Object)) {
+						scope.root[scope.prop]=new Object();
+				}
+			}
+			// Resolving the node scope
+			scope={
+				root : scope.root[scope.prop],
+				prop : nodes[i]
+			};
+		}
+		this.previousNodes=nodes.slice(0);
+		return scope;
+	};
 
 	VarStreamReader.prototype.read = function (chunk) {
 		// Looping throught chunk chars
@@ -117,7 +216,7 @@
 					}
 					// Fail if a new line is found
 					if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
-						if(this.stricMode) {
+						if(this.strictMode) {
 							throw Error('Unexpected new line found while parsing '
 							+' a leftValue.');
 						}
@@ -131,7 +230,7 @@
 				case PARSE_RVAL:
 					// Left value should not be empty
 					if(''===this.leftValue) {
-						if(this.stricMode) {
+						if(this.strictMode) {
 							throw Error('Found an empty leftValue.');
 						}
 						this.state=PARSE_SILENT;
@@ -140,20 +239,56 @@
 					if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
 						// rightValue can be empty only with the = operator
 						if(this.operator!=CHR_EQ&&''===this.rightValue) {
-							if(this.stricMode) {
+							if(this.strictMode) {
 								throw Error('Found an empty rightValue.');
 							}
 							this.state=PARSE_NEWLINE;
 							continue;
 						}
-						// Compute rvals if it's a ref
+						// Compute rval
+						// if it's a ref
 						if(this.operator===CHR_REF) {
-							this.rightValue='ref to the object';
+							this.rightValue=this.resolveScope(this.rightValue);
+						// Booleans
+						} else if('true'===this.rightValue) {
+							this.rightValue=true;
+						} else if('false'===this.rightValue) {
+							this.rightValue=false;
+						// Numbers
+						} else if('NaN'===this.rightValue) {
+							this.rightValue=NaN;
+						} else if(/^\-?([0-9]+(\.[0-9]+)?|Infinity)$/
+							.test(this.rightValue)) {
+							this.rightValue=Number(value);
 						}
 						// Compute lval
-						
+						this.leftValue=this.resolveScope(this.leftValue);
 						// set rval in lval (with operators)
-						
+						switch(this.operator) {
+							case CHR_REF:
+								this.leftValue.root[this.leftValue.prop]=
+									this.rightValue.root[this.rightValue.prop];
+							break;
+							case CHR_EQ:
+								this.leftValue.root[this.leftValue.prop]=this.rightValue;
+							break;
+							case CHR_PLU:
+								this.leftValue.root[this.leftValue.prop]+=this.rightValue;
+							break;
+							case CHR_MIN:
+								this.leftValue.root[this.leftValue.prop]-=this.rightValue;
+							break;
+							case CHR_MUL:
+								this.leftValue.root[this.leftValue.prop]*=this.rightValue;
+							break;
+							case CHR_DIV:
+								this.leftValue.root[this.leftValue.prop]/=this.rightValue;
+							break;
+							case CHR_MOD:
+								this.leftValue.root[this.leftValue.prop]%=this.rightValue;
+							break;
+						}
+						this.currentVar=this.rightValue;
 						// if the newline was escaped, continue to read the string
 						if(this.escaped) {
 							this.state=PARSE_MLSTRING;
@@ -174,7 +309,7 @@
 						this.state=PARSE_RVAL;
 						continue;
 					}
-					if(this.stricMode) {
+					if(this.strictMode) {
 						throw Error('Unexpected char after the "'+this.operator+'"'+
 						' operator. Expected =, found '+chunk[i]+'.');
 					}
