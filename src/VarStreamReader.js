@@ -26,8 +26,6 @@
 		this.strictMode=(strictMode?strictMode:false);
 		// Store current scopes for backward references
 		this.previousNodes=new Array();
-		// The current readed var
-		this.currentVar=new Array();
 		// The parse state
 		this.state=PARSE_NEWLINE; // Marker to know if the next chunk begins by a multine value
 		// The current values
@@ -74,6 +72,9 @@
 		;
 
 	VarStreamReader.prototype.resolveScope = function (val) {
+		if(typeof val !== 'string') {
+			console.log('bug',typeof val, val)
+		}
 		var nodes=val.split(CHR_SEP), scope=this.rootScope, n;
 		// Looking for backward refs in the first node
 		if(nodes[0]&&nodes[0][0]==CHR_BCK) {
@@ -263,31 +264,36 @@
 						// Compute lval
 						this.leftValue=this.resolveScope(this.leftValue);
 						// set rval in lval (with operators)
-						switch(this.operator) {
-							case CHR_REF:
-								this.leftValue.root[this.leftValue.prop]=
-									this.rightValue.root[this.rightValue.prop];
-							break;
-							case CHR_EQ:
-								this.leftValue.root[this.leftValue.prop]=this.rightValue;
-							break;
-							case CHR_PLU:
-								this.leftValue.root[this.leftValue.prop]+=this.rightValue;
-							break;
-							case CHR_MIN:
-								this.leftValue.root[this.leftValue.prop]-=this.rightValue;
-							break;
-							case CHR_MUL:
-								this.leftValue.root[this.leftValue.prop]*=this.rightValue;
-							break;
-							case CHR_DIV:
-								this.leftValue.root[this.leftValue.prop]/=this.rightValue;
-							break;
-							case CHR_MOD:
-								this.leftValue.root[this.leftValue.prop]%=this.rightValue;
-							break;
+						if(null!==this.leftValue) {
+							switch(this.operator) {
+								case CHR_REF:
+									this.leftValue.root[this.leftValue.prop]=
+										this.rightValue.root[this.rightValue.prop];
+								break;
+								case CHR_EQ:
+									if(this.rightValue!=='') {
+										this.leftValue.root[this.leftValue.prop]=this.rightValue;
+									} else {
+										delete this.leftValue.root[this.leftValue.prop];
+									}
+								break;
+								case CHR_PLU:
+									this.leftValue.root[this.leftValue.prop]+=this.rightValue;
+								break;
+								case CHR_MIN:
+									this.leftValue.root[this.leftValue.prop]-=this.rightValue;
+								break;
+								case CHR_MUL:
+									this.leftValue.root[this.leftValue.prop]*=this.rightValue;
+								break;
+								case CHR_DIV:
+									this.leftValue.root[this.leftValue.prop]/=this.rightValue;
+								break;
+								case CHR_MOD:
+									this.leftValue.root[this.leftValue.prop]%=this.rightValue;
+								break;
+							}
 						}
-						this.currentVar=this.rightValue;
 						// if the newline was escaped, continue to read the string
 						if(this.escaped) {
 							if(chunk[i]===CHR_CR) {
@@ -295,8 +301,12 @@
 							} else {
 								this.escaped=ESC_NONE;
 							}
-							this.state=PARSE_MLSTRING;
-							this.leftValue.root[this.leftValue.prop]+=chunk[i];
+							if(null!==this.leftValue) {
+								this.state=PARSE_MLSTRING;
+								this.leftValue.root[this.leftValue.prop]+=chunk[i];
+							} else {
+								this.state=PARSE_SILENT;
+							}
 						} else {
 							this.state=PARSE_NEWLINE;
 						}
