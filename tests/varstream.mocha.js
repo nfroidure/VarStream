@@ -123,7 +123,7 @@ describe('Reading a varstream', function() {
 		.once('end', function () {
 				// Numbers
 				assert.equal(typeof scope.aSimpleIntValue, 'number');
-				assert.equal(scope.aSimpleIntValue,((1898+5)*2)-15);
+				assert.equal(scope.aSimpleIntValue,(((1898+5)*2)-15)%8);
 				assert.equal(typeof scope.aSimpleIntNegativeValue, 'number');
 				assert.equal(scope.aSimpleIntNegativeValue,(((-1669)+6)*-3)-1);
 				assert.equal(typeof scope.aSimpleFloatValue, 'number');

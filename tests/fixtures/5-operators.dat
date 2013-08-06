@@ -3,6 +3,7 @@
 aSimpleIntValue+=5
 aSimpleIntValue*=2
 aSimpleIntValue-=15
+aSimpleIntValue%=8
 aSimpleIntNegativeValue+=6
 aSimpleIntNegativeValue*=-3
 aSimpleIntNegativeValue-=1
