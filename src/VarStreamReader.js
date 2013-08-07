@@ -7,10 +7,6 @@
  * Foundation, in version 3. It is distributed in the
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  *
- * This object is NodeJs independent
- *
- * Important warning ! Should evaluate the right member first in case of backward referencing with * or + in the two sides
- *
  */
 
 // AMD + global + NodeJS : You can use this object by inserting a script
@@ -32,7 +28,7 @@
 		this.leftValue='';
 		this.rightValue='';
 		this.operator='';
-		this.escaped=false;
+		this.escaped=ESC_NONE;
 	}
 
 	// Constants
