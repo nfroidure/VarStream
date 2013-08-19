@@ -58,10 +58,10 @@
 					context=context.substr(0,index)+'*'+context.substr(index+1);
 				}
 			}
-			// Trying to reduce context with "
+			// Trying to reduce context with ^
 			var morphedContext=context;
 			if(this.morphContexts&&this.lastContext&&morphedContext.indexOf(this.lastContext+'.')===0) {
-				morphedContext=morphedContext.replace(this.lastContext,'"')
+				morphedContext=morphedContext.replace(this.lastContext,'^')
 			}
 			// Saving this context for later use
 			var index=context.lastIndexOf('.');
