@@ -309,6 +309,15 @@
 						continue;
 					}
 					// Store RVAL chars
+					if(this.escaped) {
+						if(this.escaped==ESC_ALL) {
+							if(this.strictMode) {
+								throw Error('Found an escape char but there was nothing to escape.');
+								}
+							this.rightValue+='\\';
+						}
+						this.escaped=ESC_NONE;
+					}
 					this.rightValue+=chunk[i];
 					continue;
 				// Parse the content of a multiline value

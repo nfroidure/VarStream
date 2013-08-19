@@ -285,6 +285,22 @@ describe('Reading chunked varstreams', function() {
 
 });
 
+describe('Reading varstreams', function() {
+
+		it("should work well when chars are escaped", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars',true);
+			myVarStream.read('aObj.aText=This is a text \\\\\n');
+			assert.strictEqual(scope.vars.aObj.aText,'This is a text \\');
+			// If an escaped char is not consumed, should consider to keep him
+			myVarStream.read('aObj.aText=This is \\a text.\n');
+			assert.strictEqual(scope.vars.aObj.aText,'This is a text.');
+			myVarStream.read('aObj.aText=This is \\\\a text.\n');
+			assert.strictEqual(scope.vars.aObj.aText,'This is \\a text.');
+		});
+
+});
+
 describe('Reading bad varstreams', function() {
 
 	describe("should raise exceptions when", function() {
