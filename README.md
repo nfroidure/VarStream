@@ -1,8 +1,6 @@
 VarStream - v2
 ============
 
-*WARNING:* This VarStream version is currently under development ! Use it at your own risk !
-
 VarStream is a variable exchange format designed to replace JSON for situations when it reaches its limits. VarStream has many advantages :
 - Human readable/writeable : no need to be a programmer to create VarStream datas.
 - Streamable : No need to wait the datas to be fully loaded to populate/access your program variables (usefull for web sockets realtime var loading and ui reactivity...).
@@ -46,17 +44,28 @@ fs.createReadStream('test.dat').pipe(myVarStream) // Reading var stream from a R
 Browser :
 ```js
 var myScope={};
-var myStreamReader=new VarStreamReader(myScope,true); // May use XHR to load VarStreams
-myStreamReader.read(''); // Reading empty chunk
-myStreamReader.read('#comment'); // This is a comment
-myStreamReader.read('# Database'
- +'database.type=mysql'+"\n"
- +'database.hosts.+.domain=mysql1.example.com'+"\n"
- +'database.hosts.*.master=true'+"\n"
- +'database.hosts.+.domain=mysql2.example.com'+"\n"
- +'^.master=false'+"\n"
- +'database.hosts.+&=database.hosts.0'+"\n"
- +'database.hosts.+.domain&=database.hosts.*.domain'+"\n"); // A more complicated chunk
+// Create a new VarStream parser
+var myStreamReader=new VarStreamReader(myScope,true);
+// Reading empty chunk
+myStreamReader.read('');
+// This is a comment
+myStreamReader.read('# Database');
+myStreamReader.read('database.type=mysql\n');
+myStreamReader.read('database.hosts.+.domain=mysql1.example.com\n'
+ +'database.hosts');
+// Real stream, content can be sent char by char
+myStreamReader.read('.*.');
+myStreamReader.read('master=');
+myStreamReader.read('true\n');
+myStreamReader.read('database.hosts.+.domain=mysql2.example.com\n');
+// You can refer to the previous variable tree node
+myStreamReader.read('^.master=false\n');
+// You can also link two nodes
+myStreamReader.read('database.hosts.+&=database.hosts.0\n');
+// Or assigning a previously set value
+myStreamReader.read('database.hosts.+.domain&=database.hosts.*.domain\n');
+
+// Result of the previous code
 console.log(myScope.database.hosts[0].domain); // prints mysql1.example.com
 console.log(myScope.database.hosts[1].domain); // prints mysql2.example.com
 console.log(myScope.database.hosts[2].domain); // prints mysql1.example.com
@@ -69,9 +78,9 @@ VarStream comes with 2 CLI utilities, to use them, install VarStream globally :
 ```sh
 npm install -g varstream
 # Convert JSON datas to VarStream
-json2varstream path/to/input.json path/to/ouput.dat
+json2varstream path/to/input.json > path/to/ouput.dat
 # Convert VarStreams datas to JSON
-varstream2json path/to/input.dat path/to/ouput.json
+varstream2json path/to/input.dat > path/to/ouput.json
 ```
 
 Contributing/Testing
