@@ -15,7 +15,7 @@ if(process.argv[2]) {
 				console.error('Bad JSON file (err:'+e+').');
 			}
 			// Creating the varstream
-			myVarStream=new VarStream(scope, 'vars', true);
+			myVarStream=new VarStream(scope, 'vars', VarStream.VarStreamReader.STRICT_MODE);
 			// Creating the write stream
 			var wS = fs.createWriteStream(process.argv[3]||'/dev/stdout');
 			wS.on('error', function(err) {

@@ -14,14 +14,18 @@
 (function(root,define){ define([], function() {
 // START: Module logic start
  
-	function VarStreamWriter(callback,mergeArrays,morphContexts,debug) {
+	function VarStreamWriter(callback,options) {
 		this.lastContext='';
 		this.callback=callback; // Output stream callback
-		this.mergeArrays=(mergeArrays?mergeArrays:true);
-		this.morphContexts=(morphContexts?morphContexts:true);
-		this.debug=(debug?debug:false);
+		this.options=options;
 		this.imbricatedArrayEntries=new Array();
 	}
+
+	// Static consts
+	VarStreamWriter.MORPH_CONTEXTS=2;
+	VarStreamWriter.MERGE_ARRAYS=4;
+	VarStreamWriter.OPTIONS=
+		VarStreamWriter.MORPH_CONTEXTS|VarStreamWriter.MERGE_ARRAYS;
 
 	VarStreamWriter.prototype.write = function (scope,context) {
 		if(!context)
@@ -32,7 +36,8 @@
 					console.log('Reading array entry '+i+' in scope '+context);
 				}
 				this.imbricatedArrayEntries.push(true);
-				this.write(scope[i],(context?context+'.':'')+(this.mergeArrays?'?':1));
+				this.write(scope[i],(context?context+'.':'')
+					+(this.options&VarStreamWriter.MERGE_ARRAYS?'?':1));
 				this.imbricatedArrayEntries.pop();
 			}
 		} else if(scope instanceof Object) {
@@ -40,7 +45,8 @@
 				if(this.debug) {
 					console.log('Reading object property '+prop+' in scope '+context);
 				}
-				if (scope.hasOwnProperty(prop)&&(!(scope instanceof Function))&&/^([a-z0-9_]+)$/i.test(prop)) {
+				if (scope.hasOwnProperty(prop)&&(!(scope instanceof Function))
+					&&/^([a-z0-9_]+)$/i.test(prop)) {
 					this.write(scope[prop],(context?context+'.':'')+prop);
 				}
 			}
@@ -60,14 +66,16 @@
 			}
 			// Trying to reduce context with ^
 			var morphedContext=context;
-			if(this.morphContexts&&this.lastContext&&morphedContext.indexOf(this.lastContext+'.')===0) {
+			if(this.options&VarStreamWriter.MORPH_CONTEXTS&&this.lastContext
+				&&morphedContext.indexOf(this.lastContext+'.')===0) {
 				morphedContext=morphedContext.replace(this.lastContext,'^')
 			}
 			// Saving this context for later use
 			var index=context.lastIndexOf('.');
 			this.lastContext=(index!==false?context.substr(0,index):'');
 			// Calling back
-			this.callback(morphedContext+'='+(scope+'').replace(/(\r?\n)/igm,'\\'+"\n")+"\n");
+			this.callback(morphedContext+'='+(scope+'')
+				.replace(/(\r?\n)/igm,'\\'+"\n")+"\n");
 		}
 	};
 

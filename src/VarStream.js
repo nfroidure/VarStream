@@ -16,10 +16,12 @@ var Stream = require('stream').Stream
   , VarStreamWriter=require('./VarStreamWriter')
   ;
 
-var VarStream=function(rootObject, prop, strictMode) {
+var VarStream=function(rootObject, prop, options) {
 	this.readable=this.writable=(rootObject&&prop?true:false);
 	this.scope={root:rootObject, prop:prop};
-	this.reader=new VarStreamReader(this.scope.root,this.scope.prop, strictMode);
+	this.options=(options?options&VarStreamReader.OPTIONS:0);
+	this.reader=new VarStreamReader(this.scope.root,
+		this.scope.prop, this.options);
 };
 util.inherits(VarStream, Stream);
 
@@ -55,7 +57,7 @@ VarStream.prototype.pipe = function(writeStream) {
 	var self=this;
 	var writer=new VarStreamWriter(function(data) {
 			writeStream.write(data,'utf8');
-		}, true, true, true);
+		}, options?options&VarStreamWriter.OPTIONS:0);
 	writer.write(this.scope.root[this.scope.prop]);
 };
 

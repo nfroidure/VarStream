@@ -5,7 +5,7 @@ var VarStream = require('../src/VarStream'),
 
 if(process.argv[2]) {
 		var scope={}, myVarStream;
-		myVarStream=new VarStream(scope, 'vars', true);
+		myVarStream=new VarStream(scope, 'vars', VarStream.VarStreamReader.STRICT_MODE);
 		var rS=fs.createReadStream(process.argv[2]);
 		rS.on('error', function(err) {
 			console.error('Unable to read to the input file: '+err);
@@ -22,5 +22,6 @@ if(process.argv[2]) {
 				});
 			});
 } else {
-	console.log('Usage: '+process.argv[0]+' '+process.argv[1]+' path/to/input.dat path/to/output.json');
+	console.log('Usage: '+process.argv[0]+' '+process.argv[1]
+		+' path/to/input.dat path/to/output.json');
 }

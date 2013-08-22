@@ -15,21 +15,25 @@
 // START: Module logic start
 
 	// Constructor
-	function VarStreamReader (scope, prop, strictMode) {
+	function VarStreamReader (scope, prop, options) {
 		// Keep a ref to the root scope
 		this.rootScope={root:scope,prop:prop};
-		// Save the strictMode param
-		this.strictMode=(strictMode?strictMode:false);
+		// Save the options
+		this.options=options;
 		// Store current scopes for backward references
 		this.previousNodes=new Array();
 		// The parse state
-		this.state=PARSE_NEWLINE; // Marker to know if the next chunk begins by a multine value
+		this.state=PARSE_NEWLINE;
 		// The current values
 		this.leftValue='';
 		this.rightValue='';
 		this.operator='';
 		this.escaped=ESC_NONE;
 	}
+
+	// Static consts
+	VarStreamReader.STRICT_MODE=1;
+	VarStreamReader.OPTIONS=VarStreamReader.STRICT_MODE;
 
 	// Constants
 		// Chars
@@ -73,7 +77,7 @@
 		if(nodes[0]&&nodes[0][0]==CHR_BCK) {
 			// if no previous nodes
 			if(0===this.previousNodes.length) {
-				if(this.strictMode) {
+				if(this.options&VarStreamReader.STRICT_MODE) {
 					throw Error('Backward reference given while no previous nodes.');
 				}
 				if(1===nodes.length||1===nodes[0].length) {
@@ -89,7 +93,7 @@
 			} else {
 				// check it
 				if(!BCK_CHARS.test(nodes[0])) {
-					if(this.strictMode) {
+					if(this.options&VarStreamReader.STRICT_MODE) {
 						throw Error('Malformed backward reference.');
 					}
 					return null;
@@ -97,7 +101,7 @@
 				var n=parseInt(nodes[0].substring(1),10);
 			}
 			if(n>this.previousNodes.length) {
-				if(this.strictMode) {
+				if(this.options&VarStreamReader.STRICT_MODE) {
 					throw Error('Backward reference index is greater than the previous'
 						+' node max index.');
 				}
@@ -111,7 +115,7 @@
 		for(var i=0, j=nodes.length; i<j; i++) {
 			// Checking if the node is not empty
 			if(''===nodes[i]) {
-				if(this.strictMode) {
+				if(this.options&VarStreamReader.STRICT_MODE) {
 					throw Error('The leftValue can\'t have empty nodes ('+val+').');
 				}
 				return null;
@@ -135,7 +139,7 @@
 			} else {
 				// Checking node chars
 				if(!PROP_NODE_CHARS.test(nodes[i])) {
-					if(this.strictMode) {
+					if(this.options&VarStreamReader.STRICT_MODE) {
 						throw Error('Illegal chars found in a the node "'+nodes[i]+'".');
 					}
 					return null;
@@ -207,7 +211,7 @@
 					}
 					// Fail if a new line is found
 					if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
-						if(this.strictMode) {
+						if(this.options&VarStreamReader.STRICT_MODE) {
 							throw Error('Unexpected new line found while parsing '
 							+' a leftValue.');
 						}
@@ -222,7 +226,7 @@
 				case PARSE_RVAL:
 					// Left value should not be empty
 					if(''===this.leftValue) {
-						if(this.strictMode) {
+						if(this.options&VarStreamReader.STRICT_MODE) {
 							throw Error('Found an empty leftValue.');
 						}
 						this.state=PARSE_SILENT;
@@ -231,8 +235,9 @@
 					if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
 						// rightValue can be empty only with the = operator
 						// or if the strin is multiline
-						if(this.operator!=CHR_EQ&&''===this.rightValue&&this.escaped===ESC_NONE) {
-							if(this.strictMode) {
+						if(this.operator!=CHR_EQ&&''===this.rightValue
+							&&this.escaped===ESC_NONE) {
+							if(this.options&VarStreamReader.STRICT_MODE) {
 								throw Error('Found an empty rightValue.');
 							}
 							this.state=PARSE_NEWLINE;
@@ -311,7 +316,7 @@
 					// Store RVAL chars
 					if(this.escaped) {
 						if(this.escaped==ESC_ALL) {
-							if(this.strictMode) {
+							if(this.options&VarStreamReader.STRICT_MODE) {
 								throw Error('Found an escape char but there was nothing to escape.');
 								}
 							this.rightValue+='\\';
@@ -341,7 +346,7 @@
 						this.state=PARSE_RVAL;
 						continue;
 					}
-					if(this.strictMode) {
+					if(this.options&VarStreamReader.STRICT_MODE) {
 						throw Error('Unexpected char after the "'+this.operator+'"'+
 						' operator. Expected =, found '+chunk[i]+'.');
 					}
