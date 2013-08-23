@@ -327,17 +327,21 @@
 					continue;
 				// Parse the content of a multiline value
 				case PARSE_MLSTRING:
-					if((chunk[i]===CHR_ENDL&&!(this.escaped&ESC_LF))
-						||(chunk[i]===CHR_CR&&!(this.escaped&ESC_ALL))) {
+					if(this.escaped) {
+						if(chunk[i]===CHR_CR) {
+							this.escaped=ESC_LF;
+						} else if(this.escaped===ESC_ALL&&chunk[i]!==CHR_ENDL) {
+							if(this.options&VarStreamReader.STRICT_MODE) {
+								throw Error('Found an escape char but there was nothing to escape.');
+								}
+							this.leftValue.root[this.leftValue.prop]+='\\';
+						}
+						this.escaped=ESC_NONE;
+					} else if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
 						this.state=PARSE_NEWLINE;
 						continue;
 					}
-					if(chunk[i]===CHR_CR&&(this.escaped&ESC_ALL)) {
-						this.escaped=ESC_LF;
-					}
-					if(chunk[i]===CHR_ENDL&&(this.escaped&ESC_LF)) {
-						this.escaped=ESC_NONE;
-					}
+					// Store RVAL chars
 					this.leftValue.root[this.leftValue.prop]+=chunk[i];
 					continue;
 				// Finding the = char after an operator

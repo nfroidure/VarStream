@@ -298,6 +298,17 @@ describe('Reading varstreams', function() {
 			assert.strictEqual(scope.vars.aObj.aText,'This is \\a text.');
 		});
 
+		it("should work well when chars are escaped in multiline strings", function() {
+			var scope = {};
+			var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+			myVarStream.read('aObj.aText=This is a \\\n');
+			assert.strictEqual(scope.vars.aObj.aText,'This is a \n');
+			myVarStream.read('multiline \\ text.\\\n');
+			assert.strictEqual(scope.vars.aObj.aText,'This is a \nmultiline \\ text.\n');
+			myVarStream.read('With two \\\\ lines.\\\\\n');
+			assert.strictEqual(scope.vars.aObj.aText,'This is a \nmultiline \\ text.\nWith two \\ lines.\\');
+		});
+
 });
 
 describe('Reading bad varstreams', function() {
