@@ -328,15 +328,24 @@
 				// Parse the content of a multiline value
 				case PARSE_MLSTRING:
 					if(this.escaped) {
-						if(chunk[i]===CHR_CR) {
+						if(this.escaped===ESC_ALL&&chunk[i]===CHR_CR) {
 							this.escaped=ESC_LF;
-						} else if(this.escaped===ESC_ALL&&chunk[i]!==CHR_ENDL) {
-							if(this.options&VarStreamReader.STRICT_MODE) {
-								throw Error('Found an escape char but there was nothing to escape.');
+						} else if(chunk[i]===CHR_ENDL) {
+							this.escaped=ESC_NONE;
+						} else {
+							if(this.escaped===ESC_LF) {
+								if(this.options&VarStreamReader.STRICT_MODE) {
+									throw Error('Assuming a LF after an escaped CR, '
+										+chunk[i]+' found instead.');
 								}
-							this.leftValue.root[this.leftValue.prop]+='\\';
+							} else {
+								if(this.options&VarStreamReader.STRICT_MODE) {
+									throw Error('Found an escape char but there was nothing to escape.');
+								}
+								this.leftValue.root[this.leftValue.prop]+='\\';
+							}
+							this.escaped=ESC_NONE;
 						}
-						this.escaped=ESC_NONE;
 					} else if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
 						this.state=PARSE_NEWLINE;
 						continue;
@@ -376,6 +385,7 @@
 					continue;
 				// Something was wrong, waiting for a newline to continue parsing
 				case PARSE_SILENT:
+					//console.log('silent',i,chunk[i]);
 					if((chunk[i]===CHR_ENDL&&!(this.escaped&ESC_LF))
 						||(chunk[i]===CHR_CR&&!(this.escaped&ESC_ALL))) {
 						this.state=PARSE_NEWLINE;

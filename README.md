@@ -1,4 +1,4 @@
-VarStream - v2
+VarStream - v2   [![Build Status](https://travis-ci.org/nfroidure/VarStream.png?branch=master)](https://travis-ci.org/nfroidure/VarStream)
 ============
 
 VarStream is a variable exchange format designed to replace JSON for situations when it reaches its limits. VarStream has many advantages :
