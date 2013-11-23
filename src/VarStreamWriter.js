@@ -14,7 +14,7 @@
 (function(root,define){ define([], function() {
 // START: Module logic start
  
-  function VarStreamWriter(callback,options) {
+  function VarStreamWriter(callback, options) {
     this.lastContext='';
     this.callback=callback; // Output stream callback
     this.options=options;
@@ -27,7 +27,7 @@
   VarStreamWriter.OPTIONS=
     VarStreamWriter.MORPH_CONTEXTS|VarStreamWriter.MERGE_ARRAYS;
 
-  VarStreamWriter.prototype.write = function (scope,context) {
+  VarStreamWriter.prototype.write = function (scope, context) {
     if(!context)
       context='';
     if(scope instanceof Array) {

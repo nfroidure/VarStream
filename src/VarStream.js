@@ -10,59 +10,60 @@
  * This object is reserved for NodeJs usage only
  *
  */
-var Stream = require('stream').Stream
+var DuplexStream = require('stream').Duplex
   , util = require('util')
   , VarStreamReader=require('./VarStreamReader')
   , VarStreamWriter=require('./VarStreamWriter')
   ;
 
-var VarStream=function(rootObject, prop, options) {
-  this.readable=this.writable=(rootObject&&prop?true:false);
-  this.scope={root:rootObject, prop:prop};
-  this.options=(options?options&VarStreamReader.OPTIONS:0);
-  this.reader=new VarStreamReader(this.scope.root,
-    this.scope.prop, this.options);
-};
-util.inherits(VarStream, Stream);
+// Inherit of duplex stream
+util.inherits(VarStream, DuplexStream);
 
-// Write part
-VarStream.prototype.write = function(data, encoding) {
-    if(Buffer.isBuffer(data)) {
-      data = data.toString(encoding || 'utf8');
+// Constructor
+function VarStream(rootObject, rootProperty, options) {
+  var self = this;
+
+  // Ensure new were used
+  if(!(this instanceof VarStream)) {
+    throw Error('Please use the "new" operator to instanciate a VarStream.');
+  }
+
+  // Ensure we had root object and property
+  if(!(rootObject instanceof Object)) {
+    throw Error('No root object provided.');
+  }
+  if('string' !== typeof rootProperty) {
+    throw Error('No root property name given.');
+  }
+
+  // Parent constructor
+  DuplexStream.call(this);
+
+  this._varstreamReader=new VarStreamReader(rootObject, rootProperty,
+    options ? options&VarStreamReader.OPTIONS : 0);
+
+  this._varstreamWriter = new VarStreamWriter(function(str) {
+      self.push(new Buffer(str, 'utf8'));
+  }, options ? options&VarStreamWriter.OPTIONS : 0);
+
+  // Parse input
+  this._write = function _write(chunk, encoding, done) {
+    var str = '';
+    if(Buffer.isBuffer(chunk)) {
+      str = chunk.toString(encoding !== 'buffer' ? encoding : 'utf8');
+    } else {
+      str = chunk;
     }
-  this.reader.read(data);
-};
+    this._varstreamReader.read(str);
+    done();
+  };
 
-VarStream.prototype.end = function() {
-  this.emit('end');
-};
+  // Output data
+  this._read = function _read() {
+    this._varstreamWriter.write(rootObject[rootProperty]);
+    this.push(null);
+  };
 
-VarStream.prototype.destroySoon = function() {
-
-};
-// No error event throwed yet
-// So no drain event throwed yet
-
-// Read part
-VarStream.prototype.setEncoding = function() {
-};
-
-VarStream.prototype.pause = function() {
-};
-
-VarStream.prototype.resume = function() {
-};
-
-VarStream.prototype.pipe = function(writeStream) {
-  var self=this;
-  var writer=new VarStreamWriter(function(data) {
-      writeStream.write(data,'utf8');
-    }, options?options&VarStreamWriter.OPTIONS:0);
-  writer.write(this.scope.root[this.scope.prop]);
-};
-
-// Common
-VarStream.prototype.destroy = function() {
 };
 
 // Exporting
