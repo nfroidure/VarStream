@@ -17,24 +17,24 @@ var Stream = require('stream').Stream
   ;
 
 var VarStream=function(rootObject, prop, options) {
-	this.readable=this.writable=(rootObject&&prop?true:false);
-	this.scope={root:rootObject, prop:prop};
-	this.options=(options?options&VarStreamReader.OPTIONS:0);
-	this.reader=new VarStreamReader(this.scope.root,
-		this.scope.prop, this.options);
+  this.readable=this.writable=(rootObject&&prop?true:false);
+  this.scope={root:rootObject, prop:prop};
+  this.options=(options?options&VarStreamReader.OPTIONS:0);
+  this.reader=new VarStreamReader(this.scope.root,
+    this.scope.prop, this.options);
 };
 util.inherits(VarStream, Stream);
 
 // Write part
 VarStream.prototype.write = function(data, encoding) {
     if(Buffer.isBuffer(data)) {
-			data = data.toString(encoding || 'utf8');
-		}
-	this.reader.read(data);
+      data = data.toString(encoding || 'utf8');
+    }
+  this.reader.read(data);
 };
 
 VarStream.prototype.end = function() {
-	this.emit('end');
+  this.emit('end');
 };
 
 VarStream.prototype.destroySoon = function() {
@@ -54,11 +54,11 @@ VarStream.prototype.resume = function() {
 };
 
 VarStream.prototype.pipe = function(writeStream) {
-	var self=this;
-	var writer=new VarStreamWriter(function(data) {
-			writeStream.write(data,'utf8');
-		}, options?options&VarStreamWriter.OPTIONS:0);
-	writer.write(this.scope.root[this.scope.prop]);
+  var self=this;
+  var writer=new VarStreamWriter(function(data) {
+      writeStream.write(data,'utf8');
+    }, options?options&VarStreamWriter.OPTIONS:0);
+  writer.write(this.scope.root[this.scope.prop]);
 };
 
 // Common

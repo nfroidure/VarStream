@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Nicolas Froidure
+ * Copyright (C) 2012-2013 Nicolas Froidure
  *
  * This file is free software;
  * you can redistribute it and/or modify it under the terms of the GNU
@@ -14,98 +14,98 @@
 (function(root,define){ define([], function() {
 // START: Module logic start
  
-	function VarStreamWriter(callback,options) {
-		this.lastContext='';
-		this.callback=callback; // Output stream callback
-		this.options=options;
-		this.imbricatedArrayEntries=new Array();
-	}
+  function VarStreamWriter(callback,options) {
+    this.lastContext='';
+    this.callback=callback; // Output stream callback
+    this.options=options;
+    this.imbricatedArrayEntries=new Array();
+  }
 
-	// Static consts
-	VarStreamWriter.MORPH_CONTEXTS=2;
-	VarStreamWriter.MERGE_ARRAYS=4;
-	VarStreamWriter.OPTIONS=
-		VarStreamWriter.MORPH_CONTEXTS|VarStreamWriter.MERGE_ARRAYS;
+  // Static consts
+  VarStreamWriter.MORPH_CONTEXTS=2;
+  VarStreamWriter.MERGE_ARRAYS=4;
+  VarStreamWriter.OPTIONS=
+    VarStreamWriter.MORPH_CONTEXTS|VarStreamWriter.MERGE_ARRAYS;
 
-	VarStreamWriter.prototype.write = function (scope,context) {
-		if(!context)
-			context='';
-		if(scope instanceof Array) {
-			for(var i=0, j=scope.length; i<j; i++) {
-				if(this.debug) {
-					console.log('Reading array entry '+i+' in scope '+context);
-				}
-				this.imbricatedArrayEntries.push(true);
-				this.write(scope[i],(context?context+'.':'')
-					+(this.options&VarStreamWriter.MERGE_ARRAYS?'?':1));
-				this.imbricatedArrayEntries.pop();
-			}
-		} else if(scope instanceof Object) {
-			for (prop in scope) {
-				if(this.debug) {
-					console.log('Reading object property '+prop+' in scope '+context);
-				}
-				if (scope.hasOwnProperty(prop)&&(!(scope instanceof Function))
-					&&/^([a-z0-9_]+)$/i.test(prop)) {
-					this.write(scope[prop],(context?context+'.':'')+prop);
-				}
-			}
-		} else {
-			if(this.debug) {
-				console.log('Writing value '+context);
-			}
-			// Changing context with imbricated arrays
-			for(var i=this.imbricatedArrayEntries.length-1; i>=0; i--) {
-				var index=context.lastIndexOf('?');
-				if(this.imbricatedArrayEntries[i]) {
-					context=context.substr(0,index)+'+'+context.substr(index+1);
-					this.imbricatedArrayEntries[i]=false;
-				} else {
-					context=context.substr(0,index)+'*'+context.substr(index+1);
-				}
-			}
-			// Trying to reduce context with ^
-			var morphedContext=context;
-			if(this.options&VarStreamWriter.MORPH_CONTEXTS&&this.lastContext
-				&&morphedContext.indexOf(this.lastContext+'.')===0) {
-				morphedContext=morphedContext.replace(this.lastContext,'^')
-			}
-			// Saving this context for later use
-			var index=context.lastIndexOf('.');
-			this.lastContext=(index!==false?context.substr(0,index):'');
-			// Calling back
-			this.callback(morphedContext+'='+(scope+'')
-				.replace(/(\r?\n)/igm,'\\'+"\n")+"\n");
-		}
-	};
+  VarStreamWriter.prototype.write = function (scope,context) {
+    if(!context)
+      context='';
+    if(scope instanceof Array) {
+      for(var i=0, j=scope.length; i<j; i++) {
+        if(this.debug) {
+          console.log('Reading array entry '+i+' in scope '+context);
+        }
+        this.imbricatedArrayEntries.push(true);
+        this.write(scope[i],(context?context+'.':'')
+          +(this.options&VarStreamWriter.MERGE_ARRAYS?'?':1));
+        this.imbricatedArrayEntries.pop();
+      }
+    } else if(scope instanceof Object) {
+      for (prop in scope) {
+        if(this.debug) {
+          console.log('Reading object property '+prop+' in scope '+context);
+        }
+        if (scope.hasOwnProperty(prop)&&(!(scope instanceof Function))
+          &&/^([a-z0-9_]+)$/i.test(prop)) {
+          this.write(scope[prop],(context?context+'.':'')+prop);
+        }
+      }
+    } else {
+      if(this.debug) {
+        console.log('Writing value '+context);
+      }
+      // Changing context with imbricated arrays
+      for(var i=this.imbricatedArrayEntries.length-1; i>=0; i--) {
+        var index=context.lastIndexOf('?');
+        if(this.imbricatedArrayEntries[i]) {
+          context=context.substr(0,index)+'+'+context.substr(index+1);
+          this.imbricatedArrayEntries[i]=false;
+        } else {
+          context=context.substr(0,index)+'*'+context.substr(index+1);
+        }
+      }
+      // Trying to reduce context with ^
+      var morphedContext=context;
+      if(this.options&VarStreamWriter.MORPH_CONTEXTS&&this.lastContext
+        &&morphedContext.indexOf(this.lastContext+'.')===0) {
+        morphedContext=morphedContext.replace(this.lastContext,'^')
+      }
+      // Saving this context for later use
+      var index=context.lastIndexOf('.');
+      this.lastContext=(index!==false?context.substr(0,index):'');
+      // Calling back
+      this.callback(morphedContext+'='+(scope+'')
+        .replace(/(\r?\n)/igm,'\\'+"\n")+"\n");
+    }
+  };
 
 // END: Module logic end
 
-	return VarStreamWriter;
+  return VarStreamWriter;
 
 });})(this,typeof define === 'function' && define.amd ?
-	// AMD
-	define :
-	// NodeJS
-	(typeof exports === 'object'?function (name, deps, factory) {
-		var root=this;
-		if(typeof name === 'object') {
-			factory=deps; deps=name;
-		}
-		module.exports=factory.apply(this, deps.map(function(dep){
-			return require(dep);
-		}));
-	}:
-	// Global
-	function (name, deps, factory) {
-		var root=this;
-		if(typeof name === 'object') {
-			factory=deps; deps=name;
-		}
-		this.VarStreamWriter=factory.apply(this, deps.map(function(dep){
-			return root[dep.substring(dep.lastIndexOf('/')+1)];
-		}));
-	}.bind(this)
-	)
+  // AMD
+  define :
+  // NodeJS
+  (typeof exports === 'object'?function (name, deps, factory) {
+    var root=this;
+    if(typeof name === 'object') {
+      factory=deps; deps=name;
+    }
+    module.exports=factory.apply(this, deps.map(function(dep){
+      return require(dep);
+    }));
+  }:
+  // Global
+  function (name, deps, factory) {
+    var root=this;
+    if(typeof name === 'object') {
+      factory=deps; deps=name;
+    }
+    this.VarStreamWriter=factory.apply(this, deps.map(function(dep){
+      return root[dep.substring(dep.lastIndexOf('/')+1)];
+    }));
+  }.bind(this)
+  )
 );
 
