@@ -41,7 +41,7 @@
         this.imbricatedArrayEntries.pop();
       }
     } else if(scope instanceof Object) {
-      for (prop in scope) {
+      for (var prop in scope) {
         if(this.debug) {
           console.log('Reading object property '+prop+' in scope '+context);
         }
