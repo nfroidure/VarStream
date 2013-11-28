@@ -35,12 +35,12 @@ server.cache.size=2048
 # HTML document
 document.scripts.+.uri=//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js
 document.scripts.+.uri=//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js
-
-
 ```
+
 You could easily override some of its contents by loading this specific
  configuration file next to him:
-``̀`
+
+```
 # Append my custom dev TLD
 server.domain+=.local
 # Support 1 more protocol
@@ -54,6 +54,7 @@ server.cache.size*=8
 document.scripts.0.uri=javascript/jquery.js
 document.scripts.1.uri=javascript/jquery-ui.js
 ```
+
 The same goes for internationalization files. You could load a language file and
  augment it with a locale file.
 
