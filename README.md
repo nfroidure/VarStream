@@ -22,7 +22,7 @@ VarStream allows you to configure your projects in a clear and readable way.
 
 Imagine this sample configuration file:
 
-``̀`varstream
+``̀`
 # Server
 server.domain=example.com
 server.protocols.+=http
@@ -40,7 +40,7 @@ document.scripts.+.uri=//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui
 ```
 You could easily override some of its contents by loading this specific
  configuration file next to him:
-``̀`varstream
+``̀`
 # Append my custom dev TLD
 server.domain+=.local
 # Support 1 more protocol
