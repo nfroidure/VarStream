@@ -1,80 +1,102 @@
-VarStream - v2   [![Build Status](https://travis-ci.org/nfroidure/VarStream.png?branch=master)](https://travis-ci.org/nfroidure/VarStream)
-============
+# VarStream   [![Build Status](https://travis-ci.org/nfroidure/VarStream.png?branch=master)](https://travis-ci.org/nfroidure/VarStream)
 
-VarStream is a variable exchange format designed to replace JSON for situations when it reaches its limits. VarStream has many advantages :
-- Human readable/writeable : no need to be a programmer to create VarStream datas.
-- Streamable : No need to wait the datas to be fully loaded to populate/access your program variables (usefull for web sockets realtime var loading and ui reactivity...).
-- Self referencable : you can refer to another variable of the stream in the stream itself, wich is not possible with JSON.
-- Mergeable : you easily merge multiple varstreams with no loss (usefull for configuration files and localization files...).
-- Lighter most of the time : Due to it's smart optimizations (self reference, backward reference, array operators) :
-- - test1 : linear.dat [390 bytes] vs linear.json [423 bytes] => 8% smaller
-- - test2 : arrays.dat [1244 bytes] vs arrays.json [1178 bytes] => 6% bigger
-- - test3 : references.dat [2844 bytes] vs references.json [3314 bytes] => 16% smaller
-- Save memory : the garbage collector can cleanup memory before the parse ends, references prevent data duplication.
-- Comments friendly : Keeps your configuration/localization files readable.
-- Circular references friendly : transmit your data trees with no hacks.
+VarStream is a variable storage and exchange format. VarStream :
+- is human readable/writeable : no need to be a programmer to create VarStreams.
+- is streamable : No need to wait the datas to be fully loaded to
+ populate/access your program variables.
+- keeps backward references: you can refer to another variable of the stream
+ in the stream itself.
+- merges with no loss: you can easily merge multiple varstreams.
+- is light: due to it's smart optimizations and syntax sugar.
+- is memory efficient: the garbage collector can cleanup memory before the parse
+ ends, backward references prevent data duplication.
+- accept comments: keep your configuration/localization files readable.
+- loves circular references: transmit your variable trees with no hack.
 
-VarStream can be used with NodeJS and on the browser side. I haven't test it yet on old browsers but it's on my todo list.
+## Use cases
 
-VarStream program is free to use for any purpose (GNU/GPL), VarStream format is royalty free, i pushed it in the public domain. French speaking developpers can get a introduction to VarStreams here : http://www.insertafter.com/articles-remplacer_json_par_varstream.html . English version will come soon.
+### Smarter configuration files
+VarStream allows you to configure your projects in a clear and readable way.
+ Since VarStream is merge friendly, it is particularly usefull for loading
+ multilevel configuration files without erasing previously set contents.
 
-Test it !
--------------
-- change the ui before all datas load : http://server.elitwork.com/experiments/pagestream/index.html
-- loading charts progressively : http://server.elitwork.com/experiments/chartstream/index.html
-- communicate smoothly with web sockets : https://github.com/nfroidure/WebSockIPC
-- send me yours !
+Imagine this sample configuration file:
 
-How to use
--------------
+``̀`varstream
+# Server
+server.domain=example.com
+server.protocols.+=http
+server.protocols.+=https
+server.databases.+.host=db1.example.com
+server.databases.*.username=db1
+server.databases.+.host=db2.example.com
+server.databases.*.username=db2
+server.cache.size=2048
+# HTML document
+document.scripts.+.uri=//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js
+document.scripts.+.uri=//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js
 
-NodeJs :
+
+```
+You could easily override some of its contents by loading this specific
+ configuration file next to him:
+``̀`varstream
+# Append my custom dev TLD
+server.domain+=.local
+# Support 1 more protocol
+server.protocols.+=ws
+# Reset DB and set my local one
+server.databases.!.host=localhost
+server.databases.*.username=db1
+# Increase cache size (8 times)
+server.cache.size*=8
+# Use local scripts
+document.scripts.0.uri=javascript/jquery.js
+document.scripts.1.uri=javascript/jquery-ui.js
+```
+The same goes for internationalization files. You could load a language file and
+ augment it with a locale file.
+
+### Sharing variable trees in realtime
+VarStreams particularly suits with the JavaScript messaging systems. Communicate
+ throught different JavaScript threads (or over the Network) has never been so
+ simple.
+
+This is particularly usefull for data driven applications.
+
+## Test it !
+- [draw content before its full load](http://server.elitwork.com/experiments/pagestream/index.html).
+- [loading charts progressively](http://server.elitwork.com/experiments/chartstream/index.html).
+- [maintain a variable tree beetween many processes with web sockets] (https://github.com/nfroidure/WebSockIPC)
+- claim yours !
+
+## Performances
+Compared to JSON, VarStreams brings nice formatting with often less weight.
+- test1 : linear.dat [390 bytes] vs linear.json [423 bytes] => 8% smaller
+- test2 : arrays.dat [1244 bytes] vs arrays.json [1178 bytes] => 6% bigger
+- test3 : references.dat [2844 bytes] vs references.json [3314 bytes] => 16% smaller
+
+## How to use
+With NodeJs :
 ```js
 var VarStream = require('varstream');
 var fs = require('fs');
 
-var scope = {}; // The scope in wich i want vars to be loaded
-var myVarStream=new VarStream(scope, true);
-fs.createReadStream('test.dat').pipe(myVarStream) // Reading var stream from a ReadStream
+var scope = {}; // The root scope
+var myVarStream=new VarStream(scope, 'prop');
+// Reading var stream from a file
+fs.createReadStream('test.dat').pipe(myVarStream)
   .on('end', function () {
-	myVarStream.pipe(fs.createWriteStream('test2.dat')); // Piping VarStream to a WriteStream
+  // Piping VarStream to a file
+	myVarStream.pipe(fs.createWriteStream('test2.dat'));
 	});
 ```
 
-Browser :
-```js
-var myScope={};
-// Create a new VarStream parser
-var myStreamReader=new VarStreamReader(myScope,true);
-// Reading empty chunk
-myStreamReader.read('');
-// This is a comment
-myStreamReader.read('# Database');
-myStreamReader.read('database.type=mysql\n');
-myStreamReader.read('database.hosts.+.domain=mysql1.example.com\n'
- +'database.hosts');
-// Real stream, content can be sent char by char
-myStreamReader.read('.*.');
-myStreamReader.read('master=');
-myStreamReader.read('true\n');
-myStreamReader.read('database.hosts.+.domain=mysql2.example.com\n');
-// You can refer to the previous variable tree node
-myStreamReader.read('^.master=false\n');
-// You can also link two nodes
-myStreamReader.read('database.hosts.+&=database.hosts.0\n');
-// Or assigning a previously set value
-myStreamReader.read('database.hosts.+.domain&=database.hosts.*.domain\n');
+In the browser, you can use browserify or directly VarStreamReader and
+ VarStreamWriter constructors.
 
-// Result of the previous code
-console.log(myScope.database.hosts[0].domain); // prints mysql1.example.com
-console.log(myScope.database.hosts[1].domain); // prints mysql2.example.com
-console.log(myScope.database.hosts[2].domain); // prints mysql1.example.com
-console.log(myScope.database.hosts[3].domain); // prints mysql2.example.com
-```
-
-CLI Usage
--------------
-VarStream comes with 2 CLI utilities, to use them, install VarStream globally :
+## CLI Usage
+VarStream comes with two CLI utilities, to use them, install VarStream globally :
 ```sh
 npm install -g varstream
 # Convert JSON datas to VarStream
@@ -83,21 +105,18 @@ json2varstream path/to/input.json > path/to/ouput.dat
 varstream2json path/to/input.dat > path/to/ouput.json
 ```
 
-Contributing/Testing
--------------
-The VarStream JavaScript library is fully tested. If you wish to give a contribution to the current codebase, feel free to.
-
-To test your code before submitting, just run the following command with NodeJS installed :
+## Contributing/Testing
+The VarStream JavaScript library is fully tested. If you want to contribute,
+ test your code before submitting, just run the following command with
+ NodeJS dependencies installed :
 ```js
 npm test
 ```
 
-Contributors
--------------
+## Contributors
 * Nicolas Froidure - @nfroidure
 
-License
--------
+## License
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
