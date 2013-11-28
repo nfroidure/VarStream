@@ -22,7 +22,7 @@ VarStream allows you to configure your projects in a clear and readable way.
 
 Imagine this sample configuration file:
 
-``̀`
+```
 # Server
 server.domain=example.com
 server.protocols.+=http
