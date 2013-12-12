@@ -1,3 +1,4 @@
+'use strict';
 /*
  * Copyright (C) 2012-2013 Nicolas Froidure
  *
@@ -8,7 +9,7 @@
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  *
  */
-
+'use strict';
 // AMD + global + NodeJS : You can use this object by inserting a script
 // or using an AMD loader (like RequireJS) or using NodeJS
 (function(root,define){ define([], function() {

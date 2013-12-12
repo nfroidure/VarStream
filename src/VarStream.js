@@ -1,3 +1,4 @@
+'use strict';
 /*
  * Copyright (C) 2012 Nicolas Froidure
  *

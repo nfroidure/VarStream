@@ -94,7 +94,8 @@ describe('Reading a varstream', function() {
       assert.equal(typeof scope.vars.treeRoot.branch1.aSimpleIntNegativeValue,'undefined');
       assert.equal(typeof scope.vars.treeRoot.branch2,'undefined');
       assert.equal(typeof scope.vars.treeRoot.branch3.aSimpleBoolValueTrue,'undefined');
-      assert.equal(typeof scope.vars.treeRoot.branch3.branch1.aSimpleStringValue,'undefined');
+      assert.equal(typeof scope.vars.treeRoot.branch3.branch1.aSimpleStringValue,'string');
+      assert.equal(scope.vars.treeRoot.branch3.branch1.aSimpleStringValue,'');
       done();
     });
   });

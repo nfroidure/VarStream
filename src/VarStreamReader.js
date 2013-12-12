@@ -1,3 +1,4 @@
+'use strict';
 /*
  * Copyright (C) 2012-2013 Nicolas Froidure
  *
@@ -234,7 +235,7 @@
           // Stop if a new line is found
           if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
             // rightValue can be empty only with the = operator
-            // or if the strin is multiline
+            // or if the string is multiline
             if(this.operator!=CHR_EQ&&''===this.rightValue
               &&this.escaped===ESC_NONE) {
               if(this.options&VarStreamReader.STRICT_MODE) {
@@ -272,7 +273,8 @@
                     this.rightValue.root[this.rightValue.prop];
                 break;
                 case CHR_EQ:
-                  if(this.rightValue!=='') {
+                  if(this.rightValue!=='' || 'string' ===
+                    typeof this.leftValue.root[this.leftValue.prop]) {
                     this.leftValue.root[this.leftValue.prop]=this.rightValue;
                   } else {
                     delete this.leftValue.root[this.leftValue.prop];
@@ -385,7 +387,6 @@
           continue;
         // Something was wrong, waiting for a newline to continue parsing
         case PARSE_SILENT:
-          //console.log('silent',i,chunk[i]);
           if((chunk[i]===CHR_ENDL&&!(this.escaped&ESC_LF))
             ||(chunk[i]===CHR_CR&&!(this.escaped&ESC_ALL))) {
             this.state=PARSE_NEWLINE;
