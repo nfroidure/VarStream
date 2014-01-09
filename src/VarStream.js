@@ -8,14 +8,12 @@
  * Foundation, in version 3. It is distributed in the
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  *
- * This object is reserved for NodeJs usage only
- *
  */
 var DuplexStream = require('stream').Duplex
   , util = require('util')
-  , VarStreamReader=require('./VarStreamReader')
-  , VarStreamWriter=require('./VarStreamWriter')
-  ;
+  , VarStreamReader = require('./VarStreamReader')
+  , VarStreamWriter = require('./VarStreamWriter')
+;
 
 // Inherit of duplex stream
 util.inherits(VarStream, DuplexStream);
@@ -65,6 +63,27 @@ function VarStream(rootObject, rootProperty, options) {
     this.push(null);
   };
 
+};
+
+// Parse helper
+VarStream.parse = function(content) {
+  var root = {};
+  var stream = new VarStream(root, 'prop');
+  stream.write(Buffer(content));
+  stream.end();
+  return root.prop;
+};
+
+// Export helper
+VarStream.stringify = function(obj) {
+  var root = {prop: obj}, stream, content;
+  if('object' !== typeof obj) {
+    throw new Error('The stringified object must be an instance of Object.');
+  }
+  stream = new VarStream(root, 'prop');
+  content = stream.read();
+  stream.end();
+  return String(content);
 };
 
 // Exporting

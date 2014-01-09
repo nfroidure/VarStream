@@ -1,17 +1,17 @@
 # VarStream   [![Build Status](https://travis-ci.org/nfroidure/VarStream.png?branch=master)](https://travis-ci.org/nfroidure/VarStream)
 
 VarStream is a variable storage and exchange format. VarStream :
-- is human readable/writeable : no need to be a programmer to create VarStreams.
-- is streamable : No need to wait the datas to be fully loaded to
+* is human readable/writeable : no need to be a programmer to create VarStreams.
+* is streamable : No need to wait the datas to be fully loaded to
  populate/access your program variables.
-- keeps backward references: you can refer to another variable of the stream
+* keeps backward references: you can refer to another variable of the stream
  in the stream itself.
-- merges with no loss: you can easily merge multiple varstreams.
-- is light: due to it's smart optimizations and syntax sugar.
-- is memory efficient: the garbage collector can cleanup memory before the parse
+* merges with no loss: you can easily merge multiple varstreams.
+* is light: due to it's smart optimizations and syntax sugar.
+* is memory efficient: the garbage collector can cleanup memory before the parse
  ends, backward references prevent data duplication.
-- accept comments: keep your configuration/localization files readable.
-- loves circular references: transmit your variable trees with no hack.
+* accept comments: keep your configuration/localization files readable.
+* loves circular references: transmit your variable trees with no hack.
 
 ## Use cases
 
@@ -66,20 +66,28 @@ VarStreams particularly suits with the JavaScript messaging systems. Communicate
 This is particularly usefull for data driven applications.
 
 ## Test it !
-- [draw content before its full load](http://server.elitwork.com/experiments/pagestream/index.html).
-- [loading charts progressively](http://server.elitwork.com/experiments/chartstream/index.html).
-- [maintain a variable tree beetween many processes with web sockets] (https://github.com/nfroidure/WebSockIPC)
-- claim yours !
+* [draw content before its full load](http://server.elitwork.com/experiments/pagestream/index.html).
+* [loading charts progressively](http://server.elitwork.com/experiments/chartstream/index.html).
+* [maintain a variable tree beetween many processes with web sockets] (https://github.com/nfroidure/WebSockIPC)
+* claim yours !
 
 ## Performances
 Compared to JSON, VarStreams brings nice formatting with often less weight.
-- test1 : linear.dat [390 bytes] vs linear.json [423 bytes] => 8% smaller
-- test2 : arrays.dat [1244 bytes] vs arrays.json [1178 bytes] => 6% bigger
-- test3 : references.dat [2844 bytes] vs references.json [3314 bytes] => 16% smaller
+* test1 : linear.dat [390 bytes] vs linear.json [423 bytes] => 8% smaller
+* test2 : arrays.dat [1244 bytes] vs arrays.json [1178 bytes] => 6% bigger
+* test3 : references.dat [2844 bytes] vs references.json [3314 bytes] => 16% smaller
 
 ## How to use
 With NodeJs :
 ```js
+// Synchronous API
+var cnt = fs.ReadFileSync('test2.dat', {encoding: 'utf-8'});
+// Parse VarStream content
+var obj = VarStream.parse(cnt);
+// Get an Object content as a VarStream
+cnt = VarStream.stringify(obj);
+
+// Streaming
 var VarStream = require('varstream');
 var fs = require('fs');
 

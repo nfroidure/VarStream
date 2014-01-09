@@ -601,3 +601,64 @@ describe('Reading bad varstreams', function() {
   });
 
 });
+
+describe('Writing bad varstreams', function() {
+
+  describe("should raise exceptions when in strict mode and", function() {
+
+    it("the given root object is not an object or an array", function() {
+      assert.throws(
+        function() {
+          new VarStream.VarStreamWriter(function() {},
+            VarStream.VarStreamReader.STRICT_MODE).write('');
+        },
+        function(err) {
+        if(err instanceof Error
+          &&err.message==='The root scope must be an Object or an Array.') {
+            return true;
+          }
+        }
+      );
+    });
+
+  });
+
+});
+
+describe('Helpers decoding/rencoding', function() {
+
+  var dir = __dirname+'/fixtures'
+    , files = fs.readdirSync(dir)
+  ;
+
+  it('should work with some null values', function() {
+      var cnt = VarStream.stringify({
+        test: undefined,
+        test2: null
+      });
+      assert.deepEqual(
+        VarStream.stringify(VarStream.parse(VarStream.stringify(VarStream.parse(cnt)))),
+        VarStream.stringify(VarStream.parse(cnt))
+      );
+  });
+
+  it('should work with some null values in varstream format', function() {
+      var obj = VarStream.parse('test2=null\ntest3=\n');
+      assert.deepEqual(
+        VarStream.stringify(VarStream.parse(VarStream.stringify(obj))),
+        VarStream.stringify(obj)
+      );
+  });
+
+  files.forEach(function(file) {
+    if('3-delete.dat' === file) return;
+    it('should work with "'+file+'"', function() {
+      var cnt = VarStream.stringify(VarStream.parse(fs.readFileSync(dir + '/' +file, {encoding: 'utf-8'})));
+      assert.deepEqual(
+        VarStream.stringify(VarStream.parse(VarStream.stringify(VarStream.parse(cnt)))),
+        VarStream.stringify(VarStream.parse(cnt))
+      );
+    });
+  })
+
+});

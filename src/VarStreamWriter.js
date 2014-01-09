@@ -29,35 +29,31 @@
     VarStreamWriter.MORPH_CONTEXTS|VarStreamWriter.MERGE_ARRAYS;
 
   VarStreamWriter.prototype.write = function (scope, context) {
-    if(!context)
-      context='';
+    context = context || '';
     if(scope instanceof Array) {
       for(var i=0, j=scope.length; i<j; i++) {
-        if(this.debug) {
-          console.log('Reading array entry '+i+' in scope '+context);
-        }
         this.imbricatedArrayEntries.push(true);
         this.write(scope[i],(context?context+'.':'')
-          +(this.options&VarStreamWriter.MERGE_ARRAYS?'?':1));
+          +(this.options&VarStreamWriter.MERGE_ARRAYS?'?':i));
         this.imbricatedArrayEntries.pop();
       }
     } else if(scope instanceof Object) {
       for (var prop in scope) {
-        if(this.debug) {
-          console.log('Reading object property '+prop+' in scope '+context);
-        }
         if (scope.hasOwnProperty(prop)&&(!(scope instanceof Function))
           &&/^([a-z0-9_]+)$/i.test(prop)) {
           this.write(scope[prop],(context?context+'.':'')+prop);
         }
       }
     } else {
-      if(this.debug) {
-        console.log('Writing value '+context);
+      if('' === context) {
+        throw new Error('The root scope must be an Object or an Array.');
       }
       // Changing context with imbricated arrays
       for(var i=this.imbricatedArrayEntries.length-1; i>=0; i--) {
         var index=context.lastIndexOf('?');
+        if(-1 === index) {
+          continue;
+        }
         if(this.imbricatedArrayEntries[i]) {
           context=context.substr(0,index)+'+'+context.substr(index+1);
           this.imbricatedArrayEntries[i]=false;
@@ -74,9 +70,16 @@
       // Saving this context for later use
       var index=context.lastIndexOf('.');
       this.lastContext=(index!==false?context.substr(0,index):'');
+      // Export the value
+      if('undefined' === typeof scope) {
+        scope = '';
+      } else if(null === scope) {
+        scope = 'null';
+      } else {
+        scope = (scope+'').replace(/(\r?\n)/gm,'\\'+"\n");
+      }
       // Calling back
-      this.callback(morphedContext+'='+(scope+'')
-        .replace(/(\r?\n)/igm,'\\'+"\n")+"\n");
+      this.callback(morphedContext+'='+scope+"\n");
     }
   };
 
