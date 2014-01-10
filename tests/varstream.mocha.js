@@ -642,6 +642,22 @@ describe('Helpers decoding/rencoding', function() {
       );
   });
 
+  it('should work with complexer arrays', function() {
+      var obj = VarStream.parse(fs.readFileSync(__dirname+'/fixtures/y-complexarray.dat', {encoding: 'utf-8'}));
+      assert.deepEqual(
+        VarStream.stringify(VarStream.parse(VarStream.stringify(obj))),
+        VarStream.stringify(obj)
+      );
+  });
+
+  it('should work with circular references', function() {
+      var obj = VarStream.parse(fs.readFileSync(__dirname+'/fixtures/z-circular.dat', {encoding: 'utf-8'}));
+      assert.deepEqual(
+        VarStream.stringify(VarStream.parse(VarStream.stringify(obj))),
+        VarStream.stringify(obj)
+      );
+  });
+
   it('should work with some null values in varstream format', function() {
       var obj = VarStream.parse('test2=null\ntest3=\n');
       assert.deepEqual(

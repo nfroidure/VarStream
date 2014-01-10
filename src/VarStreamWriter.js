@@ -20,6 +20,8 @@
     this.callback=callback; // Output stream callback
     this.options=options;
     this.imbricatedArrayEntries=new Array();
+    this.scopes=new Array();
+    this.contexts=new Array();
   }
 
   // Static consts
@@ -28,20 +30,31 @@
   VarStreamWriter.OPTIONS=
     VarStreamWriter.MORPH_CONTEXTS|VarStreamWriter.MERGE_ARRAYS;
 
-  VarStreamWriter.prototype.write = function (scope, context) {
+  VarStreamWriter.prototype.write = function (scope, context, root) {
     context = context || '';
+    if('' === context) {
+      root = scope;
+    }
+    if(scope instanceof Object) {
+      if(-1 !== this.scopes.indexOf(scope)) {
+        this.callback(context+'&='+this.contexts[this.scopes.indexOf(scope)]+"\n");
+        return;
+      }
+      this.scopes.push(scope);
+      this.contexts.push(context);
+    }
     if(scope instanceof Array) {
       for(var i=0, j=scope.length; i<j; i++) {
         this.imbricatedArrayEntries.push(true);
         this.write(scope[i],(context?context+'.':'')
-          +(this.options&VarStreamWriter.MERGE_ARRAYS?'?':i));
+          +(this.options&VarStreamWriter.MERGE_ARRAYS?'?':i),root);
         this.imbricatedArrayEntries.pop();
       }
     } else if(scope instanceof Object) {
       for (var prop in scope) {
         if (scope.hasOwnProperty(prop)&&(!(scope instanceof Function))
           &&/^([a-z0-9_]+)$/i.test(prop)) {
-          this.write(scope[prop],(context?context+'.':'')+prop);
+          this.write(scope[prop],(context?context+'.':'')+prop,root);
         }
       }
     } else {
