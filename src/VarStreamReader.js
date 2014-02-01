@@ -70,26 +70,19 @@
     , ESC_NONE = 0
     , ESC_LF = 1
     , ESC_ALL = 3
-    ;
+  ;
 
   VarStreamReader.prototype.resolveScope = function (val) {
-    var nodes=val.split(CHR_SEP), scope=this.rootScope, n;
+    var nodes = val.split(CHR_SEP)
+      , scope = this.rootScope
+      , n = 0
+    ;
+
     // Looking for backward refs in the first node
-    if(nodes[0]&&nodes[0][0]==CHR_BCK) {
-      // if no previous nodes
-      if(0===this.previousNodes.length) {
-        if(this.options&VarStreamReader.STRICT_MODE) {
-          throw Error('Backward reference given while no previous nodes.');
-        }
-        if(1===nodes.length||1===nodes[0].length) {
-          return null;
-        } else {
-          nodes.shift();
-        }
-      }
-      // if no numbers adding every previous nodes except the prop
-      if(nodes[0]==CHR_BCK) {
-        n=this.previousNodes.length-2;
+    if(nodes[0] && nodes[0][0] == CHR_BCK) {
+      // if no numbers adding every previous nodes
+      if(nodes[0] == CHR_BCK) {
+        n = this.previousNodes.length;
       // if numbers
       } else {
         // check it
@@ -99,16 +92,16 @@
           }
           return null;
         }
-        var n=parseInt(nodes[0].substring(1),10);
+        n = parseInt(nodes[0].substring(1), 10) + 1;
       }
-      if(n>this.previousNodes.length) {
+      if(n > this.previousNodes.length) {
         if(this.options&VarStreamReader.STRICT_MODE) {
           throw Error('Backward reference index is greater than the previous'
-            +' node max index.');
+            + ' node max index.');
         }
         return null;
       }
-      this.previousNodes.length=n+1;
+      this.previousNodes.length = n;
       nodes.shift();
       nodes.unshift.apply(nodes,this.previousNodes);
     }
@@ -157,7 +150,12 @@
         prop : nodes[i]
       };
     }
-    this.previousNodes=nodes.slice(0);
+
+    // Keep previous nodes for backwards references
+    this.previousNodes =  nodes.length ?
+      nodes.slice(0, nodes.length - 1) :
+      [];
+
     return scope;
   };
 

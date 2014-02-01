@@ -321,6 +321,13 @@ describe('Reading varstreams', function() {
       assert.strictEqual(scope.vars.aObj.aText,'This is \\a text.');
     });
 
+    it("should work when the stream refers to its root scope", function() {
+      var scope = {};
+      var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+      myVarStream.read('aObj.parent&=^\n');
+      assert.equal(scope.vars,scope.vars.aObj.parent);
+    });
+
     it("should work well when chars are escaped in multiline strings", function() {
       var scope = {};
       var myVarStream=new VarStream.VarStreamReader(scope,'vars');
@@ -523,23 +530,6 @@ describe('Reading bad varstreams', function() {
         function(err) {
         if(err instanceof Error
           &&err.message==='Illegal chars found in a the node "ds$d".') {
-            return true;
-          }
-        }
-      );
-    });
-
-    it("there are backward reference on an empty scope", function() {
-      var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
-      assert.throws(
-        function() {
-          myVarStream.read('^.test=true\n');
-        },
-        function(err) {
-        if(err instanceof Error
-          &&err.message==='Backward reference given while no previous nodes.') {
             return true;
           }
         }
