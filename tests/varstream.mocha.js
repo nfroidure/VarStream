@@ -321,7 +321,14 @@ describe('Reading varstreams', function() {
       assert.strictEqual(scope.vars.aObj.aText,'This is \\a text.');
     });
 
-    it("should work when the stream refers to its root scope", function() {
+    it("should work when the stream refers to its root scope with ^", function() {
+      var scope = {};
+      var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+      myVarStream.read('aObj.parent&=^\n');
+      assert.equal(scope.vars,scope.vars.aObj.parent);
+    });
+
+    it("should work when the stream refers to its root scope with ^0", function() {
       var scope = {};
       var myVarStream=new VarStream.VarStreamReader(scope,'vars');
       myVarStream.read('aObj.parent&=^\n');
@@ -626,6 +633,19 @@ describe('Helpers decoding/rencoding', function() {
         test: undefined,
         test2: null
       });
+      assert.deepEqual(
+        VarStream.stringify(VarStream.parse(VarStream.stringify(VarStream.parse(cnt)))),
+        VarStream.stringify(VarStream.parse(cnt))
+      );
+  });
+
+  it('should work with values referring to the root scope', function() {
+      var obj = {
+        test2: {} 
+      };
+      obj.test = obj;
+      obj.test2.test = obj;
+      var cnt = VarStream.stringify(obj);
       assert.deepEqual(
         VarStream.stringify(VarStream.parse(VarStream.stringify(VarStream.parse(cnt)))),
         VarStream.stringify(VarStream.parse(cnt))

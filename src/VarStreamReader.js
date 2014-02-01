@@ -82,7 +82,7 @@
     if(nodes[0] && nodes[0][0] == CHR_BCK) {
       // if no numbers adding every previous nodes
       if(nodes[0] == CHR_BCK) {
-        n = this.previousNodes.length;
+        n = this.previousNodes.length ? this.previousNodes.length - 1 : 0;
       // if numbers
       } else {
         // check it
@@ -92,7 +92,7 @@
           }
           return null;
         }
-        n = parseInt(nodes[0].substring(1), 10) + 1;
+        n = parseInt(nodes[0].substring(1), 10);
       }
       if(n > this.previousNodes.length) {
         if(this.options&VarStreamReader.STRICT_MODE) {
@@ -105,6 +105,7 @@
       nodes.shift();
       nodes.unshift.apply(nodes,this.previousNodes);
     }
+
     // Looping throught each nodes
     for(var i=0, j=nodes.length; i<j; i++) {
       // Checking if the node is not empty
@@ -152,9 +153,7 @@
     }
 
     // Keep previous nodes for backwards references
-    this.previousNodes =  nodes.length ?
-      nodes.slice(0, nodes.length - 1) :
-      [];
+    this.previousNodes = nodes;
 
     return scope;
   };

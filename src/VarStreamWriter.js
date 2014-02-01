@@ -22,6 +22,7 @@
     this.imbricatedArrayEntries=new Array();
     this.scopes=new Array();
     this.contexts=new Array();
+    this.previousContext='';
   }
 
   // Static consts
@@ -37,7 +38,12 @@
     }
     if(scope instanceof Object) {
       if(-1 !== this.scopes.indexOf(scope)) {
-        this.callback(context+'&='+this.contexts[this.scopes.indexOf(scope)]+"\n");
+        if(root == scope) {
+          this.callback(context+'&=^0'+"\n");
+        } else {
+          this.callback(context+'&='+this.contexts[this.scopes.indexOf(scope)]+"\n");
+        }
+        this.previousContext = context;
         return;
       }
       this.scopes.push(scope);
@@ -47,14 +53,14 @@
       for(var i=0, j=scope.length; i<j; i++) {
         this.imbricatedArrayEntries.push(true);
         this.write(scope[i],(context?context+'.':'')
-          +(this.options&VarStreamWriter.MERGE_ARRAYS?'?':i),root);
+          +(this.options&VarStreamWriter.MERGE_ARRAYS?'?':i), root);
         this.imbricatedArrayEntries.pop();
       }
     } else if(scope instanceof Object) {
       for (var prop in scope) {
         if (scope.hasOwnProperty(prop)&&(!(scope instanceof Function))
           &&/^([a-z0-9_]+)$/i.test(prop)) {
-          this.write(scope[prop],(context?context+'.':'')+prop,root);
+          this.write(scope[prop],(context?context+'.':'')+prop, root);
         }
       }
     } else {
@@ -93,6 +99,7 @@
       }
       // Calling back
       this.callback(morphedContext+'='+scope+"\n");
+      this.previousContext = context;
     }
   };
 
