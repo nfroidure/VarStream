@@ -1,6 +1,9 @@
-# VarStream   [![Build Status](https://travis-ci.org/nfroidure/VarStream.png?branch=master)](https://travis-ci.org/nfroidure/VarStream)
+# VarStream
+> VarStream is a data storage and exchange format.
 
-VarStream is a variable storage and exchange format. VarStream :
+[![NPM version](https://badge.fury.io/js/varstream.png)](https://npmjs.org/package/varstream) [![Build status](https://secure.travis-ci.org/nfroidure/VarStream.png)](https://travis-ci.org/nfroidure/VarStream) [![Dependency Status](https://david-dm.org/nfroidure/VarStream.png)](https://david-dm.org/nfroidure/VarStream) [![devDependency Status](https://david-dm.org/nfroidure/VarStream/dev-status.png)](https://david-dm.org/nfroidure/VarStream#info=devDependencies) [![Coverage Status](https://coveralls.io/repos/nfroidure/VarStream/badge.png?branch=master)](https://coveralls.io/r/nfroidure/VarStream?branch=master)
+
+VarStream :
 * is human readable/writeable : no need to be a programmer to create VarStreams.
 * is streamable : No need to wait the datas to be fully loaded to
  populate/access your program variables.
@@ -60,7 +63,7 @@ The same goes for internationalization files. You could load a language file and
 
 ### Sharing variable trees in realtime
 VarStreams particularly suits with the JavaScript messaging systems. Communicate
- throught different JavaScript threads (or over the Network) has never been so
+ through different JavaScript threads (or over the Network) has never been so
  simple.
 
 This is particularly usefull for data driven applications.
@@ -68,7 +71,7 @@ This is particularly usefull for data driven applications.
 ## Test it !
 * [draw content before its full load](http://server.elitwork.com/experiments/pagestream/index.html).
 * [loading charts progressively](http://server.elitwork.com/experiments/chartstream/index.html).
-* [maintain a variable tree beetween many processes with web sockets] (https://github.com/nfroidure/WebSockIPC)
+* [maintain a variable tree beetween many processes with web sockets](https://github.com/nfroidure/WebSockIPC).
 * claim yours !
 
 ## Performances
@@ -105,7 +108,7 @@ In the browser, you can use browserify or directly VarStreamReader and
  VarStreamWriter constructors.
 
 ## CLI Usage
-VarStream comes with two CLI utilities, to use them, install VarStream globally :
+VarStream comes with two CLI utilities, to use them, install VarStream globally:
 ```sh
 npm install -g varstream
 # Convert JSON datas to VarStream

@@ -250,7 +250,7 @@ describe('Reading chunked varstreams', function() {
 
   it("Should work at the lval level", function() {
     var scope = {};
-    var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+    var myVarStream=new VarStream.Reader(scope,'vars');
     myVarStream.read('aVar1=ok\naVa');
     assert.equal(scope.vars.aVar1,'ok');
     assert.equal(typeof scope.vars.aVar2,'undefined');
@@ -261,7 +261,7 @@ describe('Reading chunked varstreams', function() {
 
   it("Should work at the operator level", function() {
     var scope = {};
-    var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+    var myVarStream=new VarStream.Reader(scope,'vars');
     myVarStream.read('aVar1=ok\naVar2');
     assert.equal(scope.vars.aVar1,'ok');
     assert.equal(typeof scope.vars.aVar2,'undefined');
@@ -272,7 +272,7 @@ describe('Reading chunked varstreams', function() {
 
   it("Should work at the next operator level", function() {
     var scope = {};
-    var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+    var myVarStream=new VarStream.Reader(scope,'vars');
     myVarStream.read('aVar1=ok\naVar2=');
     assert.equal(scope.vars.aVar1,'ok');
     assert.equal(typeof scope.vars.aVar2,'undefined');
@@ -283,7 +283,7 @@ describe('Reading chunked varstreams', function() {
 
   it("Should work at the rval level", function() {
     var scope = {};
-    var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+    var myVarStream=new VarStream.Reader(scope,'vars');
     myVarStream.read('aVar1=ok\naVar2=1');
     assert.equal(scope.vars.aVar1,'ok');
     assert.equal(typeof scope.vars.aVar2,'undefined');
@@ -294,7 +294,7 @@ describe('Reading chunked varstreams', function() {
 
   it("Should work at the multiline level", function() {
     var scope = {};
-    var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+    var myVarStream=new VarStream.Reader(scope,'vars');
     myVarStream.read('aVar1=ok\naVar2=Y');
     assert.equal(scope.vars.aVar1,'ok');
     assert.equal(typeof scope.vars.aVar2,'undefined');
@@ -312,7 +312,7 @@ describe('Reading varstreams', function() {
 
     it("should work well when chars are escaped", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+      var myVarStream=new VarStream.Reader(scope,'vars');
       myVarStream.read('aObj.aText=This is a text \\\\\n');
       assert.strictEqual(scope.vars.aObj.aText,'This is a text \\');
       myVarStream.read('aObj.aText=This is \\a text.\n');
@@ -323,21 +323,21 @@ describe('Reading varstreams', function() {
 
     it("should work when the stream refers to its root scope with ^", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+      var myVarStream=new VarStream.Reader(scope,'vars');
       myVarStream.read('aObj.parent&=^\n');
       assert.equal(scope.vars,scope.vars.aObj.parent);
     });
 
     it("should work when the stream refers to its root scope with ^0", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+      var myVarStream=new VarStream.Reader(scope,'vars');
       myVarStream.read('aObj.parent&=^\n');
       assert.equal(scope.vars,scope.vars.aObj.parent);
     });
 
     it("should work well when chars are escaped in multiline strings", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars');
+      var myVarStream=new VarStream.Reader(scope,'vars');
       myVarStream.read('aObj.aText=This is a \\\n');
       assert.strictEqual(scope.vars.aObj.aText,'This is a \n');
       myVarStream.read('multiline \\ text.\\\n');
@@ -354,8 +354,8 @@ describe('Reading bad varstreams', function() {
 
     it("a line ends with no =", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimpleVar\n');
@@ -372,8 +372,8 @@ describe('Reading bad varstreams', function() {
 
     it("a line ends with no value after &=", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimpleVar&=\n');
@@ -389,8 +389,8 @@ describe('Reading bad varstreams', function() {
 
     it("a line ends with no value after +=", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimpleVar+=\n');
@@ -406,8 +406,8 @@ describe('Reading bad varstreams', function() {
 
     it("a line ends with no value after -=", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimpleVar-=\n');
@@ -423,8 +423,8 @@ describe('Reading bad varstreams', function() {
 
     it("a line ends with no value after *=", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimpleVar*=\n');
@@ -440,8 +440,8 @@ describe('Reading bad varstreams', function() {
 
     it("a line ends with no value after /=", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimpleVar/=\n');
@@ -457,8 +457,8 @@ describe('Reading bad varstreams', function() {
 
     it("there are a empty node at start", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('.ASimpleVar=true\n');
@@ -475,8 +475,8 @@ describe('Reading bad varstreams', function() {
 
     it("there are a empty node at start", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimpleVar.prop..prop.prop=true\n');
@@ -493,8 +493,8 @@ describe('Reading bad varstreams', function() {
 
     it("there are a empty node at end", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimpleVar.=false\n');
@@ -510,8 +510,8 @@ describe('Reading bad varstreams', function() {
 
     it("there are malformed nodes", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimp-+leVar.ds+d=false\n');
@@ -528,8 +528,8 @@ describe('Reading bad varstreams', function() {
 
     it("there are malformed nodes", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimpleVar.ds$d=false\n');
@@ -545,8 +545,8 @@ describe('Reading bad varstreams', function() {
 
     it("there are out of range backward reference", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimpleVar.prop1.prop2=false\n^4.test=true\n');
@@ -563,8 +563,8 @@ describe('Reading bad varstreams', function() {
 
     it("there are malformed backward reference", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimpleVar.prop1.prop2=false\n^4b.test=true\n');
@@ -580,8 +580,8 @@ describe('Reading bad varstreams', function() {
 
     it("there are malformed backward reference2", function() {
       var scope = {};
-      var myVarStream=new VarStream.VarStreamReader(scope,'vars',
-        VarStream.VarStreamReader.STRICT_MODE);
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
       assert.throws(
         function() {
           myVarStream.read('ASimpleVar.prop1.prop2=false\n^b5.test=true\n');
@@ -606,8 +606,8 @@ describe('Writing bad varstreams', function() {
     it("the given root object is not an object or an array", function() {
       assert.throws(
         function() {
-          new VarStream.VarStreamWriter(function() {},
-            VarStream.VarStreamReader.STRICT_MODE).write('');
+          new VarStream.Writer(function() {},
+            VarStream.Reader.STRICT_MODE).write('');
         },
         function(err) {
         if(err instanceof Error

@@ -87,6 +87,6 @@ VarStream.stringify = function(obj) {
 };
 
 // Exporting
-VarStream.VarStreamReader=VarStreamReader;
-VarStream.VarStreamWriter=VarStreamWriter;
+VarStream.VarStreamReader = VarStream.Reader = VarStreamReader;
+VarStream.VarStreamWriter = VarStream.Writer = VarStreamWriter;
 module.exports = VarStream;

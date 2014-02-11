@@ -1,27 +1,33 @@
-#! /usr/bin/env node
+#!/usr/bin/env node
 
-var VarStream = require('../src/VarStream'),
-	fs = require('fs');
+var VarStream = require(__dirname + '/../src/VarStream')
+  , fs = require('fs')
+;
 
 if(process.argv[2]) {
-		var scope={}, myVarStream;
-		myVarStream=new VarStream(scope, 'vars', VarStream.VarStreamReader.STRICT_MODE);
-		var rS=fs.createReadStream(process.argv[2]);
-		rS.on('error', function(err) {
-			console.error('Unable to read to the input file: '+err);
+	var scope = {}
+	  , myVarStream = new VarStream(scope, 'vars')
+	  , rS=fs.createReadStream(process.argv[2])
+	;
+
+	rS.pipe(myVarStream)
+	  .once('finish', function () {
+	    if(!process.argv[3]) {
+	      process.stdout.write(JSON.stringify(scope.vars));
+	      return;
+	    }
+		  fs.writeFile(process.argv[3],
+			  JSON.stringify(scope.vars),
+			  function(err) {
+				  if(err) {
+					  throw err;
+				  }
+					console.log('Saved!');
+  		  });
 		});
-		rS.pipe(myVarStream)
-		  .on('end', function () {
-				fs.writeFile(process.argv[3]||'/dev/stdout',
-					JSON.stringify(scope.vars), function(err) {
-						if(err) {
-							console.error(err);
-						} else {
-							process.argv[3]&&console.log("Saved!");
-						}
-				});
-			});
+
 } else {
-	console.log('Usage: '+process.argv[0]+' '+process.argv[1]
-		+' path/to/input.dat path/to/output.json');
+	console.log('Usage: ' + process.argv[0] + ' ' + process.argv[1]
+		+ ' path/to/input.dat path/to/output.json');
 }
+
