@@ -9,7 +9,7 @@
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  *
  */
-var DuplexStream = require('stream').Duplex
+var DuplexStream = require('readable-stream').Duplex
   , util = require('util')
   , VarStreamReader = require('./VarStreamReader')
   , VarStreamWriter = require('./VarStreamWriter')
