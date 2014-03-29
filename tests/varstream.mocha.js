@@ -11,6 +11,12 @@ describe('VarStream constructor', function() {
     });
   });
 
+  it('should waccept options', function() {
+    assert.doesNotThrow(function() {
+      new VarStream({}, 'prop', VarStream.VarStreamReader.OPTIONS);
+    });
+  });
+
   it('should fail when no root object is given', function() {
     assert.throws(function() {
       new VarStream();

@@ -347,7 +347,272 @@ describe('Reading varstreams', function() {
 
 describe('Reading bad varstreams', function() {
 
-  describe("should raise exceptions when", function() {
+  describe("should silently fail when", function() {
+
+    it("a line ends with no value after =", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        validVar2: 'bidule'
+      });
+    });
+
+    it("a line has an empty lvalue", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\n=truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        validVar2: 'bidule'
+      });
+    });
+
+    it("a line has an empty lvalue with a multiline rightvalue", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\n=truc\\n1\\n2\\nmachin\n\nvalidVar2=bidule\n'); // Something wrong here
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        validVar2: 'bidule'
+      });
+    });
+
+    it("a line ends with no value after &=", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar&=\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        validVar2: 'bidule'
+      });
+    });
+
+    it("a line ends with no value after +=", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar+=\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        validVar2: 'bidule'
+      });
+    });
+
+    it("a line ends with no value after -=", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar-=\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        validVar2: 'bidule'
+      });
+    });
+
+    it("a line ends with no value after /=", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar/=\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        validVar2: 'bidule'
+      });
+    });
+
+    it("when there are an empty node at start", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\n.ASimpleVar=truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        validVar2: 'bidule'
+      });
+    });
+
+    it("when there are an empty node somewhere", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar.aNode..anotherNode.and=truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        ASimpleVar: {},
+        validVar2: 'bidule'
+      });
+    });
+
+    it("when there are an empty node at end", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar.anode.=truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        ASimpleVar: {},
+        validVar2: 'bidule'
+      });
+    });
+
+    it("when there malformed nodes at start", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\n$%*.ASimpleVar.anode.$=truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        validVar2: 'bidule'
+      });
+    });
+
+    it("when there malformed nodes somewhere", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar.anode.$.another=truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        ASimpleVar: {},
+        validVar2: 'bidule'
+      });
+    });
+
+    it("when there malformed nodes at end", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar.anode.$=truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        ASimpleVar: {},
+        validVar2: 'bidule'
+      });
+    });
+
+    it("there are malformed backward reference in a leftval", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\n^3g.SimpleVar.anode=truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        validVar2: 'bidule'
+      });
+    });
+
+    it("there are malformed backward reference in a leftval 2", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\n^g3.SimpleVar.anode=truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        validVar2: 'bidule'
+      });
+    });
+
+    it("there are malformed backward reference in a righval", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar.anode&=^3g.truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        ASimpleVar: {anode: null},
+        validVar2: 'bidule'
+      });
+    });
+
+    it("there are malformed backward reference in a righval 2", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar.anode&=^g3.truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        ASimpleVar: {anode: null},
+        validVar2: 'bidule'
+      });
+    });
+
+    it("there are out of range backward reference in a leftval", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\n^12.ASimpleVar.anode=truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        validVar2: 'bidule'
+      });
+    });/*
+
+    it("there are out of range backward reference in a rightval", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar.anode+=^12.truc.truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        ASimpleVar: {anode: null},
+        validVar2: 'bidule'
+      });
+    });*/
+
+    it("a legal char is escaped", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar.anode=truc\\truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        ASimpleVar: {anode: 'truc\\truc'},
+        validVar2: 'bidule'
+      });
+    });
+
+    it("a legal char is escaped in a multiline value", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      assert.doesNotThrow(function() {
+          myVarStream.read('validVar1=machin\nASimpleVar.anode=truc\\\ntruc\\truc\nvalidVar2=bidule\n');
+      });
+      assert.deepEqual(scope.vars, {
+        validVar1: 'machin',
+        ASimpleVar: {anode: 'truc\ntruc\\truc'},
+        validVar2: 'bidule'
+      });
+    });
+
+  });
+
+  describe("in strict mode, should raise exceptions when", function() {
 
     it("a line ends with no =", function() {
       var scope = {};
@@ -361,6 +626,23 @@ describe('Reading bad varstreams', function() {
         if(err instanceof Error
           &&err.message==='Unexpected new line found while parsing '
               +' a leftValue.') {
+            return true;
+          }
+        }
+      );
+    });
+
+    it("a line has no lvalue", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
+      assert.throws(
+        function() {
+          myVarStream.read('=ASimpleVar\n');
+        },
+        function(err) {
+        if(err instanceof Error
+          &&err.message==='Found an empty leftValue.') {
             return true;
           }
         }
@@ -470,7 +752,7 @@ describe('Reading bad varstreams', function() {
       );
     });
 
-    it("there are a empty node at start", function() {
+    it("there are a empty node somewhere", function() {
       var scope = {};
       var myVarStream=new VarStream.Reader(scope,'vars',
         VarStream.Reader.STRICT_MODE);
@@ -515,8 +797,8 @@ describe('Reading bad varstreams', function() {
         },
         function(err) {
         if(err instanceof Error
-          &&err.message==='Unexpected char after the "-" operator. Expected =,'
-            +' found +.') {
+          &&err.message==='Unexpected char after the "-" operator. Expected "="'
+            +' found "+".') {
             return true;
           }
         }
@@ -558,7 +840,7 @@ describe('Reading bad varstreams', function() {
       );
     });
 
-    it("there are malformed backward reference", function() {
+    it("there are malformed backward reference in a righval", function() {
       var scope = {};
       var myVarStream=new VarStream.Reader(scope,'vars',
         VarStream.Reader.STRICT_MODE);
@@ -575,7 +857,7 @@ describe('Reading bad varstreams', function() {
       );
     });
 
-    it("there are malformed backward reference2", function() {
+    it("there are malformed backward reference in a righval 2", function() {
       var scope = {};
       var myVarStream=new VarStream.Reader(scope,'vars',
         VarStream.Reader.STRICT_MODE);
@@ -586,6 +868,108 @@ describe('Reading bad varstreams', function() {
         function(err) {
         if(err instanceof Error
           &&err.message==='Malformed backward reference.') {
+            return true;
+          }
+        }
+      );
+    });
+
+    it("there are malformed backward reference in a leftval", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
+      assert.throws(
+        function() {
+          myVarStream.read('^b5.test=true\n');
+        },
+        function(err) {
+        if(err instanceof Error
+          &&err.message==='Malformed backward reference.') {
+            return true;
+          }
+        }
+      );
+    });
+
+    it("there are malformed backward reference in a leftval 2", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
+      assert.throws(
+        function() {
+          myVarStream.read('^5b.test=true\n');
+        },
+        function(err) {
+        if(err instanceof Error
+          &&err.message==='Malformed backward reference.') {
+            return true;
+          }
+        }
+      );
+    });
+
+    it("there are bad range backward reference in a leftval", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
+      assert.throws(
+        function() {
+          myVarStream.read('^8.test=true\n');
+        },
+        function(err) {
+        if(err instanceof Error
+          &&err.message==='Backward reference index is greater than the previous node max index.') {
+            return true;
+          }
+        }
+      );
+    });
+
+    it("a legal char is escaped", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
+      assert.throws(
+        function() {
+          myVarStream.read('test=t\\rue\n');
+        },
+        function(err) {
+        if(err instanceof Error
+          &&err.message==='Found an escape char but there was nothing to escape.') {
+            return true;
+          }
+        }
+      );
+    });
+
+    it("a legal char is escaped in a multiline value", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
+      assert.throws(
+        function() {
+          myVarStream.read('test=truc\\\ntruc\\truc\n');
+        },
+        function(err) {
+        if(err instanceof Error
+          &&err.message==='Found an escape char but there was nothing to escape.') {
+            return true;
+          }
+        }
+      );
+    });
+
+    it("an operator is not folled by =", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars',
+        VarStream.Reader.STRICT_MODE);
+      assert.throws(
+        function() {
+          myVarStream.read('test&\n');
+        },
+        function(err) {
+        if(err instanceof Error
+          &&err.message==='Unexpected char after the "&" operator. Expected "=" found "\n".') {
             return true;
           }
         }

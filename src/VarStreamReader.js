@@ -18,7 +18,7 @@
   // Constructor
   function VarStreamReader (scope, prop, options) {
     // Keep a ref to the root scope
-    this.rootScope={root:scope,prop:prop};
+    this.rootScope={root: scope, prop: prop};
     // Save the options
     this.options=options;
     // Store current scopes for backward references
@@ -245,7 +245,6 @@
             // if it's a ref
             if(this.operator===CHR_REF) {
               this.rightValue=this.resolveScope(this.rightValue);
-            // null
             } else if('null'===this.rightValue) {
               this.rightValue=null;
             // Booleans
@@ -266,8 +265,9 @@
             if(null!==this.leftValue) {
               switch(this.operator) {
                 case CHR_REF:
-                  this.leftValue.root[this.leftValue.prop]=
-                    this.rightValue.root[this.rightValue.prop];
+                  this.leftValue.root[this.leftValue.prop] = this.rightValue ?
+                    this.rightValue.root[this.rightValue.prop] :
+                    null;
                 break;
                 case CHR_EQ:
                   if(this.rightValue!=='' || 'string' ===
@@ -278,19 +278,24 @@
                   }
                 break;
                 case CHR_PLU:
-                  this.leftValue.root[this.leftValue.prop]+=this.rightValue;
+                  this.leftValue.root[this.leftValue.prop] +=
+                    null === this.rightValue ? NaN : this.rightValue;
                 break;
                 case CHR_MIN:
-                  this.leftValue.root[this.leftValue.prop]-=this.rightValue;
+                  this.leftValue.root[this.leftValue.prop] -=
+                    null === this.rightValue ? NaN : this.rightValue;
                 break;
                 case CHR_MUL:
-                  this.leftValue.root[this.leftValue.prop]*=this.rightValue;
+                  this.leftValue.root[this.leftValue.prop] *=
+                    null === this.rightValue ? NaN : this.rightValue;
                 break;
                 case CHR_DIV:
-                  this.leftValue.root[this.leftValue.prop]/=this.rightValue;
+                  this.leftValue.root[this.leftValue.prop] /=
+                    null === this.rightValue ? NaN : this.rightValue;
                 break;
                 case CHR_MOD:
-                  this.leftValue.root[this.leftValue.prop]%=this.rightValue;
+                  this.leftValue.root[this.leftValue.prop]  %=
+                    null === this.rightValue ? NaN : this.rightValue;
                 break;
               }
             }
@@ -340,7 +345,7 @@
               } else {
                 if(this.options&VarStreamReader.STRICT_MODE) {
                   throw new SyntaxError('Found an escape char but there was'
-                    + 'nothing to escape.');
+                    + ' nothing to escape.');
                 }
                 this.leftValue.root[this.leftValue.prop]+='\\';
               }
@@ -360,10 +365,11 @@
             continue;
           }
           if(this.options&VarStreamReader.STRICT_MODE) {
-            throw new SyntaxError('Unexpected char after the "'+this.operator+'"'+
-            ' operator. Expected =, found '+chunk[i]+'.');
+            throw new SyntaxError('Unexpected char after the'
+              + ' "'+this.operator+'" operator. Expected "="'
+              + ' found "'+chunk[i]+'".');
           }
-          if(chunk[i]===CHR_EQ||chunk[i]===CHR_CR) {
+          if(chunk[i]===CHR_ENDL || chunk[i]===CHR_CR) {
             this.state=PARSE_NEWLINE;
           } else {
             this.state=PARSE_SILENT;
