@@ -47,13 +47,9 @@ function VarStream(rootObject, rootProperty, options) {
 
   // Parse input
   this._write = function _write(chunk, encoding, done) {
-    var str = '';
-    if(Buffer.isBuffer(chunk)) {
-      str = chunk.toString(encoding !== 'buffer' ? encoding : 'utf8');
-    } else {
-      str = chunk;
-    }
-    this._varstreamReader.read(str);
+    this._varstreamReader.read(chunk.toString(
+      encoding !== 'buffer' ? encoding : 'utf8'
+    ));
     done();
   };
 
