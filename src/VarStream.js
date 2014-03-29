@@ -24,15 +24,15 @@ function VarStream(rootObject, rootProperty, options) {
 
   // Ensure new were used
   if(!(this instanceof VarStream)) {
-    throw Error('Please use the "new" operator to instanciate a VarStream.');
+    throw new Error('Please use the "new" operator to instanciate a VarStream.');
   }
 
   // Ensure we had root object and property
   if(!(rootObject instanceof Object)) {
-    throw Error('No root object provided.');
+    throw new Error('No root object provided.');
   }
   if('string' !== typeof rootProperty) {
-    throw Error('No root property name given.');
+    throw new Error('No root property name given.');
   }
 
   // Parent constructor
@@ -63,7 +63,7 @@ function VarStream(rootObject, rootProperty, options) {
     this.push(null);
   };
 
-};
+}
 
 // Parse helper
 VarStream.parse = function(content) {

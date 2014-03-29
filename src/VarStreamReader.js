@@ -1,4 +1,3 @@
-'use strict';
 /*
  * Copyright (C) 2012-2013 Nicolas Froidure
  *
@@ -13,6 +12,7 @@
 // AMD + global + NodeJS : You can use this object by inserting a script
 // or using an AMD loader (like RequireJS) or using NodeJS
 (function(root,define){ define([], function() {
+  'use strict';
 // START: Module logic start
 
   // Constructor
@@ -22,7 +22,7 @@
     // Save the options
     this.options=options;
     // Store current scopes for backward references
-    this.previousNodes=new Array();
+    this.previousNodes=[];
     // The parse state
     this.state=PARSE_NEWLINE;
     // The current values
@@ -88,7 +88,7 @@
         // check it
         if(!BCK_CHARS.test(nodes[0])) {
           if(this.options&VarStreamReader.STRICT_MODE) {
-            throw Error('Malformed backward reference.');
+            throw new Error('Malformed backward reference.');
           }
           return null;
         }
@@ -96,8 +96,8 @@
       }
       if(n > this.previousNodes.length) {
         if(this.options&VarStreamReader.STRICT_MODE) {
-          throw Error('Backward reference index is greater than the previous'
-            + ' node max index.');
+          throw new SyntaxError('Backward reference index is greater than the'
+            + ' previous node max index.');
         }
         return null;
       }
@@ -111,7 +111,7 @@
       // Checking if the node is not empty
       if(''===nodes[i]) {
         if(this.options&VarStreamReader.STRICT_MODE) {
-          throw Error('The leftValue can\'t have empty nodes ('+val+').');
+          throw new Error('The leftValue can\'t have empty nodes ('+val+').');
         }
         return null;
       }
@@ -120,7 +120,7 @@
         // Ensure the scope is an array
         if('undefined'=== typeof scope.root[scope.prop]
           ||!(scope.root[scope.prop] instanceof Array)) {
-            scope.root[scope.prop]=new Array();
+            scope.root[scope.prop]=[];
         }
         if(nodes[i]===CHR_PLU) {
             nodes[i]=scope.root[scope.prop].length;
@@ -135,14 +135,15 @@
         // Checking node chars
         if(!PROP_NODE_CHARS.test(nodes[i])) {
           if(this.options&VarStreamReader.STRICT_MODE) {
-            throw Error('Illegal chars found in a the node "'+nodes[i]+'".');
+            throw new SyntaxError('Illegal chars found in a the node'
+              + ' "'+nodes[i]+'".');
           }
           return null;
         }
         // Ensure the scope is an object
         if('undefined'=== typeof scope.root[scope.prop]
           ||!(scope.root[scope.prop] instanceof Object)) {
-            scope.root[scope.prop]=new Object();
+            scope.root[scope.prop]={};
         }
       }
       // Resolving the node scope
@@ -162,12 +163,11 @@
     // Looping throught chunk chars
     for(var i=0, j=chunk.length; i<j; i++) {
       // detect escaped chars
-      if(chunk[i]===CHR_ESC
-        &&(
+      if(chunk[i]===CHR_ESC && (
           this.state===PARSE_RVAL
           ||this.state===PARSE_SILENT
           ||this.state===PARSE_MLSTRING
-          )
+         )
         ) {
         if(this.escaped) {
           this.escaped=ESC_NONE;
@@ -210,7 +210,7 @@
           // Fail if a new line is found
           if(chunk[i]===CHR_ENDL||chunk[i]===CHR_CR) {
             if(this.options&VarStreamReader.STRICT_MODE) {
-              throw Error('Unexpected new line found while parsing '
+              throw SyntaxError('Unexpected new line found while parsing '
               +' a leftValue.');
             }
             this.state=PARSE_NEWLINE;
@@ -225,7 +225,7 @@
           // Left value should not be empty
           if(''===this.leftValue) {
             if(this.options&VarStreamReader.STRICT_MODE) {
-              throw Error('Found an empty leftValue.');
+              throw SyntaxError('Found an empty leftValue.');
             }
             this.state=PARSE_SILENT;
           }
@@ -236,7 +236,7 @@
             if(this.operator!=CHR_EQ&&''===this.rightValue
               &&this.escaped===ESC_NONE) {
               if(this.options&VarStreamReader.STRICT_MODE) {
-                throw Error('Found an empty rightValue.');
+                throw SyntaxError('Found an empty rightValue.');
               }
               this.state=PARSE_NEWLINE;
               continue;
@@ -334,12 +334,13 @@
             } else {
               if(this.escaped===ESC_LF) {
                 if(this.options&VarStreamReader.STRICT_MODE) {
-                  throw Error('Assuming a LF after an escaped CR, '
+                  throw new SyntaxError('Assuming a LF after an escaped CR, '
                     +chunk[i]+' found instead.');
                 }
               } else {
                 if(this.options&VarStreamReader.STRICT_MODE) {
-                  throw Error('Found an escape char but there was nothing to escape.');
+                  throw new SyntaxError('Found an escape char but there was'
+                    + 'nothing to escape.');
                 }
                 this.leftValue.root[this.leftValue.prop]+='\\';
               }
@@ -359,7 +360,7 @@
             continue;
           }
           if(this.options&VarStreamReader.STRICT_MODE) {
-            throw Error('Unexpected char after the "'+this.operator+'"'+
+            throw new SyntaxError('Unexpected char after the "'+this.operator+'"'+
             ' operator. Expected =, found '+chunk[i]+'.');
           }
           if(chunk[i]===CHR_EQ||chunk[i]===CHR_CR) {
