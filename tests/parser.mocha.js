@@ -307,6 +307,17 @@ describe('Reading chunked varstreams', function() {
 
 describe('Reading varstreams', function() {
 
+    it("should work well with props containing underscores", function() {
+      var scope = {};
+      var myVarStream=new VarStream.Reader(scope,'vars');
+      myVarStream.read('a_obj.a_text=This is a text \\\\\n');
+      assert.strictEqual(scope.vars.a_obj.a_text,'This is a text \\');
+      myVarStream.read('a_obj.a_text=This is \\a text.\n');
+      assert.strictEqual(scope.vars.a_obj.a_text,'This is \\a text.');
+      myVarStream.read('a_obj.a_text=This is \\\\a text.\n');
+      assert.strictEqual(scope.vars.a_obj.a_text,'This is \\a text.');
+    });
+
     it("should work well when chars are escaped", function() {
       var scope = {};
       var myVarStream=new VarStream.Reader(scope,'vars');

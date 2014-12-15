@@ -56,7 +56,7 @@
     , EQ_OPS = [CHR_PLU,CHR_MIN,CHR_MUL,CHR_DIV,CHR_MOD,CHR_REF]
     , ARRAY_OPS = [CHR_PLU,CHR_MUL,CHR_NEW]
     , ARRAY_NODE_CHARS = /^[0-9]+$/
-    , PROP_NODE_CHARS = /^[a-zA-Z0-9]+$/
+    , PROP_NODE_CHARS = /^[a-zA-Z0-9_]+$/
     , BCK_CHARS = /^\^[0-9]*$/
     // Parsing status
     , PARSE_NEWLINE = 1
