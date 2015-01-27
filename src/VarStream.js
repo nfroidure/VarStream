@@ -78,7 +78,6 @@ VarStream.stringify = function(obj) {
   }
   stream = new VarStream(root, 'prop');
   content = stream.read();
-  stream.end();
   return String(content);
 };
 
