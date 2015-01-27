@@ -11,7 +11,7 @@ describe('VarStream constructor', function() {
     });
   });
 
-  it('should waccept options', function() {
+  it('should accept options', function() {
     assert.doesNotThrow(function() {
       new VarStream({}, 'prop', VarStream.VarStreamReader.OPTIONS);
     });
@@ -48,6 +48,23 @@ describe('VarStream constructor', function() {
         return true;
       }
     });
+  });
+
+});
+
+describe('VarStream duplex stream', function() {
+
+  it('should work as expected', function(done) {
+    var root = {};
+    var stream = new VarStream(root, 'plop');
+    stream.on('finish', function() {
+      assert.equal(root.plop.plap, 'plip');
+      assert.equal(root.plop.plop, 'plup');
+      done();
+    });
+    stream.write('plap=plip\n');
+    stream.write('plop=plup\n');
+    stream.end();
   });
 
 });
@@ -106,7 +123,7 @@ describe('Helpers decoding/rencoding', function() {
 
   it('should work with values referring to the root scope', function() {
       var obj = {
-        test2: {} 
+        test2: {}
       };
       obj.test = obj;
       obj.test2.test = obj;
