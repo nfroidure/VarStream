@@ -3,6 +3,7 @@
   "description": "Stream variables beetween 2 JavaScript threads (client/server, ipc, worker/main thread).",
   "version": "0.3.2",
   "author": "Nicolas Froidure",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "http://github.com/nfroidure/VarStream.git"
