@@ -1,12 +1,9 @@
 'use strict';
 /*
- * Copyright (C) 2012-2013 Nicolas Froidure
+ * Copyright (c) 2013 Nicolas Froidure, <http://insertafter.com/>
  *
- * This file is free software;
- * you can redistribute it and/or modify it under the terms of the GNU
- * General Public License (GPL) as published by the Free Software
- * Foundation, in version 3. It is distributed in the
- * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
+ * This file is distributed under the terms of the MIT License, as
+ * found in the LICENCE file.
  *
  */
 'use strict';
