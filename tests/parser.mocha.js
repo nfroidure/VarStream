@@ -200,7 +200,7 @@ describe('Parsing VarStream', function() {
     });
   });
 
-  it("Should work with truncated content beetween chunks", function(done) {
+  it("Should work with truncated content between chunks", function(done) {
     var readStream = fs.createReadStream(__dirname+'/fixtures/7-truncated-part1.dat');
     readStream.pipe(myVarStream, { end: false })
     readStream.on('end', function () {
@@ -208,7 +208,7 @@ describe('Parsing VarStream', function() {
     });
   });
 
-  it("Should work with truncated content beetween chunks", function(done) {
+  it("Should work with truncated content between chunks", function(done) {
     var readStream = fs.createReadStream(__dirname+'/fixtures/7-truncated-part2.dat');
     readStream.pipe(myVarStream, { end: false });
     readStream.on('end', function () {
